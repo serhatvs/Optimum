@@ -17,12 +17,29 @@ from autochess.systems.modifiers import recompute_aux_stats
 STARTING_GOLD = 20
 
 
+def _parse_item_mergings(raw_mergings: list[dict]) -> dict[tuple[str, str], str]:
+    recipes: dict[tuple[str, str], str] = {}
+    for entry in raw_mergings:
+        item_1 = entry.get("item_1")
+        item_2 = entry.get("item_2")
+        result = entry.get("result")
+        if not (
+            isinstance(item_1, str)
+            and isinstance(item_2, str)
+            and isinstance(result, str)
+        ):
+            continue
+        recipes[tuple(sorted((item_1, item_2)))] = result
+    return recipes
+
+
 def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> MatchState:
     rng = random.Random(seed)
     archetypes_raw = load_json(data_dir / "archetypes.json")
     items_raw = load_json(data_dir / "items.json")
     generator_cfg = parse_generator_config(archetypes_raw)
     items = parse_items(items_raw["items"])
+    item_mergings = _parse_item_mergings(items_raw.get("mergings", []))
 
     players: list[Player] = []
 
@@ -35,13 +52,10 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         star_level=1,
         forced_archetype="Hybrid",
     )
-    starter_body_item = draw_random_item_for_slot(
-        rng,
-        items,
-        slot_type="body",
-    )
+    starter_body_item = draw_random_item_for_slot(rng, items, slot_type="body")
     if starter_body_item is None:
         raise ValueError("items catalog must contain at least one body item")
+    human_character.inventory = [starter_body_item]
     recompute_aux_stats(human_character, generator_cfg.aux_caps)
     players.append(
         Player(
@@ -82,5 +96,6 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         seed=seed,
         players=players,
         item_catalog=items,
+        item_mergings=item_mergings,
         aux_caps=generator_cfg.aux_caps,
     )

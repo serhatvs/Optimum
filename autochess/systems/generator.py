@@ -149,5 +149,4 @@ def draw_random_item_for_slot(
     available = [item for item in items.values() if item.slot_type == slot_type]
     if not available:
         return None
-
     return rng.choice(available)

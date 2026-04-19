@@ -81,6 +81,7 @@ class Character:
     item_slots: dict[str, Optional[Item]] = field(
         default_factory=lambda: {slot: None for slot in ITEM_SLOTS}
     )
+    inventory: list[Item] = field(default_factory=list)
     current_hp: int = 0
     mana: float = 0.0
     alive: bool = True
@@ -139,6 +140,7 @@ class MatchState:
     seed: int
     players: list[Player]
     item_catalog: dict[str, Item] = field(default_factory=dict)
+    item_mergings: dict[tuple[str, str], str] = field(default_factory=dict)
     aux_caps: dict[str, dict[str, float]] = field(default_factory=dict)
     history: list[str] = field(default_factory=list)
 

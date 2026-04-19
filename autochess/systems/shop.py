@@ -81,14 +81,31 @@ def parse_shop_items(raw_data: dict, *, expected_count: int = 15) -> dict[str, S
     items_raw = raw_data.get("items")
     if not isinstance(items_raw, list):
         raise ValueError("shop payload must include an 'items' array")
-    if len(items_raw) != expected_count:
+
+    merge_results: set[str] = set()
+    raw_mergings = raw_data.get("mergings")
+    if isinstance(raw_mergings, list):
+        for idx, recipe in enumerate(raw_mergings):
+            recipe_obj = _expect_dict(recipe, context=f"mergings[{idx}]")
+            result = recipe_obj.get("result")
+            if isinstance(result, str):
+                merge_results.add(result)
+
+    shop_items_raw: list[dict] = []
+    for idx, item_raw in enumerate(items_raw):
+        item_obj = _expect_dict(item_raw, context=f"items[{idx}]")
+        item_id = item_obj.get("id")
+        if isinstance(item_id, str) and item_id in merge_results:
+            continue
+        shop_items_raw.append(item_obj)
+
+    if len(shop_items_raw) != expected_count:
         raise ValueError(
-            f"shop must contain exactly {expected_count} items, found {len(items_raw)}"
+            f"shop must contain exactly {expected_count} items, found {len(shop_items_raw)}"
         )
 
     parsed: dict[str, ShopItem] = {}
-    for idx, item_raw in enumerate(items_raw):
-        item_obj = _expect_dict(item_raw, context=f"items[{idx}]")
+    for idx, item_obj in enumerate(shop_items_raw):
         item_id = _expect_str(item_obj.get("id"), context=f"items[{idx}].id")
         name = _expect_str(item_obj.get("name"), context=f"items[{idx}].name")
         slot_type = _expect_str(

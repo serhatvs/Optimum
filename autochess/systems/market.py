@@ -35,14 +35,19 @@ def purchase_market_item(
     *,
     player: Player,
     item: Item,
-    aux_caps: dict[str, dict[str, float]],
+    aux_caps: dict[str, dict[str, float]] | None = None,
 ) -> Item | None:
     price = get_market_price(item)
     if player.gold < price:
         raise ValueError("not enough gold")
 
-    replaced_item = player.character.item_slots.get(item.slot_type)
     player.gold -= price
+
+    if aux_caps is None:
+        player.character.inventory.append(item)
+        return None
+
+    replaced_item = player.character.item_slots.get(item.slot_type)
     equip_item(player.character, item)
     recompute_aux_stats(player.character, aux_caps)
     return replaced_item

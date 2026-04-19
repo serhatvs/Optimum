@@ -62,7 +62,7 @@ def _fake_arena_result(
     )
 
 
-def test_match_ends_when_human_is_eliminated() -> None:
+def test_match_continues_when_human_is_eliminated() -> None:
     match = MatchState(
         round_number=4,
         seed=7,
@@ -83,7 +83,7 @@ def test_match_ends_when_human_is_eliminated() -> None:
     assert human.eliminated
     assert len(match.active_players()) == 2
     assert get_winner(match) is None
-    assert is_match_over(match)
+    assert not is_match_over(match)
 
 
 def test_match_is_over_when_only_one_player_remains() -> None:

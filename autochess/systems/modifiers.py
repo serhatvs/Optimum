@@ -55,6 +55,4 @@ def recompute_aux_stats(
 
 
 def equip_item(character: Character, item: Item) -> None:
-    if item.slot_type not in character.item_slots:
-        raise ValueError(f"invalid slot '{item.slot_type}' for character")
     character.item_slots[item.slot_type] = item

@@ -13,6 +13,8 @@ from autochess.systems.generator import (
 from autochess.systems.loader import load_json
 from autochess.systems.modifiers import recompute_aux_stats
 
+STARTING_GOLD = 20
+
 
 def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> MatchState:
     rng = random.Random(seed)
@@ -40,6 +42,7 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
             name=player_name,
             is_human=True,
             character=human_character,
+            gold=STARTING_GOLD,
             infinite_health=True,
         )
     )
@@ -66,4 +69,10 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
             )
         )
 
-    return MatchState(round_number=1, seed=seed, players=players)
+    return MatchState(
+        round_number=1,
+        seed=seed,
+        players=players,
+        item_catalog=items,
+        aux_caps=generator_cfg.aux_caps,
+    )

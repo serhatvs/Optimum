@@ -39,6 +39,7 @@ def _build_player(
         is_human=False,
         character=character,
         bounty=bounty,
+        infinite_health=infinite_health,
     )
 
 
@@ -128,6 +129,34 @@ def test_invulnerable_units_ignore_arena_damage() -> None:
 
     assert "Bravo ignores the damage" in events
     assert bravo.hp == bravo.max_hp
+    assert bravo.alive
+
+
+def test_infinite_health_players_still_take_arena_damage() -> None:
+    arena = ArenaSimulation(
+        players=[
+            _build_player("player_a", "Alpha"),
+            _build_player("player_b", "Bravo", infinite_health=True),
+        ],
+        seed=7,
+        left=0,
+        right=200,
+        bottom=0,
+        top=200,
+    )
+
+    alpha = arena.units["player_a"]
+    bravo = arena.units["player_b"]
+    alpha.atk = 30
+    alpha.x = 50.0
+    alpha.y = 50.0
+    bravo.x = 84.0
+    bravo.y = 50.0
+
+    events = arena.step(0.05)
+
+    assert any("hits Bravo" in event for event in events)
+    assert bravo.hp < bravo.max_hp
     assert bravo.alive
 
 

@@ -1,9 +1,9 @@
 {
   "items": [
     {
-      "id": "item_frenzy_dagger",
-      "name": "Frenzy Dagger",
-      "slot_type": "weapon",
+      "id": "item_frenzy_tendons",
+      "name": "Frenzy Tendons",
+      "slot_type": "legs",
       "rarity": "common",
       "modifiers": [
         { "stat": "attack_speed", "mode": "percent", "value": 0.22 },
@@ -11,9 +11,9 @@
       ]
     },
     {
-      "id": "item_void_rapier",
-      "name": "Void Rapier",
-      "slot_type": "weapon",
+      "id": "item_razor_claws",
+      "name": "Razor Claws",
+      "slot_type": "arms",
       "rarity": "rare",
       "modifiers": [
         { "stat": "crit_chance", "mode": "flat", "value": 0.14 },
@@ -21,9 +21,9 @@
       ]
     },
     {
-      "id": "item_bloodvine_spear",
-      "name": "Bloodvine Spear",
-      "slot_type": "weapon",
+      "id": "item_leech_proboscis",
+      "name": "Leech Proboscis",
+      "slot_type": "arms",
       "rarity": "rare",
       "modifiers": [
         { "stat": "lifesteal", "mode": "flat", "value": 0.12 },
@@ -31,9 +31,9 @@
       ]
     },
     {
-      "id": "item_hawk_eye_bowstring",
-      "name": "Hawk-Eye Bowstring",
-      "slot_type": "weapon",
+      "id": "item_hunter_eyes",
+      "name": "Hunter Eyes",
+      "slot_type": "eyes",
       "rarity": "epic",
       "modifiers": [
         { "stat": "agility", "mode": "percent", "value": 0.2 },
@@ -42,9 +42,9 @@
       ]
     },
     {
-      "id": "item_mercury_carapace",
-      "name": "Mercury Carapace",
-      "slot_type": "armor",
+      "id": "item_mercury_hide",
+      "name": "Mercury Hide",
+      "slot_type": "body",
       "rarity": "common",
       "modifiers": [
         { "stat": "mana_gain", "mode": "percent", "value": 0.25 },
@@ -52,9 +52,9 @@
       ]
     },
     {
-      "id": "item_glass_plate",
-      "name": "Glass Plate",
-      "slot_type": "armor",
+      "id": "item_glass_chitin",
+      "name": "Glass Chitin",
+      "slot_type": "body",
       "rarity": "rare",
       "modifiers": [
         { "stat": "attack_speed", "mode": "percent", "value": 0.15 },
@@ -62,9 +62,9 @@
       ]
     },
     {
-      "id": "item_thornmail_core",
-      "name": "Thornmail Core",
-      "slot_type": "armor",
+      "id": "item_thorned_ribcage",
+      "name": "Thorned Ribcage",
+      "slot_type": "body",
       "rarity": "epic",
       "modifiers": [
         { "stat": "lifesteal", "mode": "flat", "value": 0.1 },
@@ -72,9 +72,9 @@
       ]
     },
     {
-      "id": "item_moonstep_greaves",
-      "name": "Moonstep Greaves",
-      "slot_type": "armor",
+      "id": "item_moonstep_legs",
+      "name": "Moonstep Legs",
+      "slot_type": "legs",
       "rarity": "rare",
       "modifiers": [
         { "stat": "agility", "mode": "percent", "value": 0.18 },
@@ -82,9 +82,9 @@
       ]
     },
     {
-      "id": "item_gamblers_coin",
-      "name": "Gambler's Coin",
-      "slot_type": "trinket_1",
+      "id": "item_gamblers_pupil",
+      "name": "Gambler's Pupil",
+      "slot_type": "eyes",
       "rarity": "common",
       "modifiers": [
         { "stat": "crit_chance", "mode": "flat", "value": 0.1 },
@@ -92,9 +92,9 @@
       ]
     },
     {
-      "id": "item_ardent_compass",
-      "name": "Ardent Compass",
-      "slot_type": "trinket_1",
+      "id": "item_ardent_heart",
+      "name": "Ardent Heart",
+      "slot_type": "heart",
       "rarity": "rare",
       "modifiers": [
         { "stat": "mana_gain", "mode": "percent", "value": 0.3 },
@@ -102,9 +102,9 @@
       ]
     },
     {
-      "id": "item_silent_locket",
-      "name": "Silent Locket",
-      "slot_type": "trinket_1",
+      "id": "item_silent_cortex",
+      "name": "Silent Cortex",
+      "slot_type": "brain",
       "rarity": "epic",
       "modifiers": [
         { "stat": "agility", "mode": "percent", "value": 0.24 },
@@ -112,9 +112,9 @@
       ]
     },
     {
-      "id": "item_raven_charm",
-      "name": "Raven Charm",
-      "slot_type": "trinket_2",
+      "id": "item_raven_tendons",
+      "name": "Raven Tendons",
+      "slot_type": "legs",
       "rarity": "common",
       "modifiers": [
         { "stat": "attack_speed", "mode": "percent", "value": 0.16 },
@@ -122,9 +122,9 @@
       ]
     },
     {
-      "id": "item_leech_idol",
-      "name": "Leech Idol",
-      "slot_type": "trinket_2",
+      "id": "item_leech_gland",
+      "name": "Leech Gland",
+      "slot_type": "heart",
       "rarity": "rare",
       "modifiers": [
         { "stat": "lifesteal", "mode": "flat", "value": 0.14 },
@@ -132,9 +132,9 @@
       ]
     },
     {
-      "id": "item_timeworn_hourglass",
-      "name": "Timeworn Hourglass",
-      "slot_type": "relic",
+      "id": "item_timeworn_core",
+      "name": "Timeworn Core",
+      "slot_type": "brain",
       "rarity": "epic",
       "modifiers": [
         { "stat": "mana_gain", "mode": "percent", "value": 0.35 },
@@ -142,9 +142,9 @@
       ]
     },
     {
-      "id": "item_vampire_reliquary",
-      "name": "Vampire Reliquary",
-      "slot_type": "relic",
+      "id": "item_vampire_heart",
+      "name": "Vampire Heart",
+      "slot_type": "heart",
       "rarity": "legendary",
       "modifiers": [
         { "stat": "lifesteal", "mode": "flat", "value": 0.2 },

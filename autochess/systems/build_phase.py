@@ -4,6 +4,7 @@ import random
 
 from autochess.models import AuxStats, Character, CoreStats, Item, ITEM_SLOTS
 from autochess.systems.modifiers import recompute_aux_stats
+from autochess.systems.optimizer import solve_survival_model
 
 
 BUILD_SLOT_KEYS = ITEM_SLOTS
@@ -62,3 +63,9 @@ def apply_build_selection_to_character(
     character.inventory = [item for item in character.inventory if item.item_id not in equipped_ids]
     
     recompute_aux_stats(character, aux_caps)
+
+
+def get_build_recommendation(
+    character: Character, available_items: list[Item]
+) -> dict[str, Item | None]:
+    return solve_survival_model(character, available_items)

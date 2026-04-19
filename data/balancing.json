@@ -1,0 +1,12 @@
+{
+  "weights": {
+    "max_hp": 1.0,
+    "lifesteal": 2.5,
+    "def_stat": 0.8,
+    "agility": 0.6,
+    "atk": 0.2,
+    "attack_speed": 0.1,
+    "crit_chance": 0.1,
+    "mana_gain": 0.1
+  }
+}

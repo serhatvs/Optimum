@@ -10,6 +10,7 @@ from autochess.systems.build_phase import (
     BUILD_SLOT_KEYS,
     apply_build_selection_to_character,
     clone_character_for_build,
+    get_build_recommendation,
     roll_build_offers,
 )
 from autochess.views.game_view import GameView
@@ -166,8 +167,14 @@ class BuildView(arcade.View):
         return rects
 
     def _button_rect(self, name: str) -> dict[str, float]:
-        total_width = self.layout["button_width"]
+        total_width = self.layout["button_width"] * 3 + 48.0
         left = (self.window.width - total_width) / 2
+        if name == "reroll":
+            button_left = left
+        elif name == "recommend":
+            button_left = left + self.layout["button_width"] + 24.0
+        else:
+            button_left = left + self.layout["button_width"] * 2 + 48.0
         return {
             "left": left,
             "right": left + total_width,
@@ -216,6 +223,24 @@ class BuildView(arcade.View):
         self.offers = roll_build_offers(self.rng, self.match_state.item_catalog)
         self.expanded_offer_index = None
         self.message = "Inventory rerolled."
+
+    def _recommend(self) -> None:
+        if not self.human_player:
+            return
+
+        # Prepare for optimization
+        # Re-use character cloning to safely pass character
+        preview = self._preview_character()
+        if preview is None:
+            return
+
+        recommendation = get_build_recommendation(preview, self.offers)
+        # Apply recommendation (subset: only non-None)
+        for slot, item in recommendation.items():
+            if item:
+                self.selected_items[slot] = item
+
+        self.message = "Recommended build applied."
 
     def _confirm(self) -> None:
         if not self.human_player:
@@ -542,12 +567,20 @@ class BuildView(arcade.View):
                 line_y -= 18
 
     def _draw_buttons(self) -> None:
-        for name, label in (("reroll", "Reroll"), ("confirm", "Confirm")):
+        for name, label in (
+            ("reroll", "Reroll"),
+            ("recommend", "Recommend"),
+            ("confirm", "Confirm"),
+        ):
             rect = self._button_rect(name)
             if name == "confirm":
                 fill = (46, 86, 72)
                 border = arcade.color.GOLD
                 text_color = arcade.color.GOLD
+            elif name == "recommend":
+                fill = (52, 60, 72)
+                border = arcade.color.LIGHT_BLUE
+                text_color = arcade.color.LIGHT_BLUE
             else:
                 fill = (38, 44, 52)
                 border = Color(90, 98, 110, 255)
@@ -707,10 +740,12 @@ class BuildView(arcade.View):
         if button != arcade.MOUSE_BUTTON_LEFT:
             return
 
-        for name in ("reroll", "confirm"):
+        for name in ("reroll", "recommend", "confirm"):
             if self._rect_contains(self._button_rect(name), x, y):
                 if name == "reroll":
                     self._reroll()
+                elif name == "recommend":
+                    self._recommend()
                 else:
                     self._confirm()
                 return

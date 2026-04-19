@@ -58,9 +58,8 @@ class BuildView(arcade.View):
         self.pressed_offer_index: int | None = None
         self.press_position: tuple[float, float] | None = None
         self.message = "Drag items from your inventory into matching slots."
-        self.offers: list[Item] = []
-        if self.human_player:
-            self.offers = self.human_player.character.inventory
+        self.rng = random.Random(match_state.seed + 313)
+        self.offers: list[Item] = roll_build_offers(self.rng, match_state.item_catalog)
         self.selected_items: dict[str, Item | None] = {
             slot: None for slot in BUILD_SLOT_KEYS
         }
@@ -176,12 +175,11 @@ class BuildView(arcade.View):
         else:
             button_left = left + self.layout["button_width"] * 2 + 48.0
         return {
-            "left": left,
-            "right": left + total_width,
+            "left": button_left,
+            "right": button_left + self.layout["button_width"],
             "bottom": self.layout["footer_y"],
             "top": self.layout["footer_y"] + self.layout["button_height"],
         }
-
 
     def _rect_contains(self, rect: dict[str, float], x: float, y: float) -> bool:
         return rect["left"] <= x <= rect["right"] and rect["bottom"] <= y <= rect["top"]
@@ -310,7 +308,7 @@ class BuildView(arcade.View):
             rect["top"] - 46,
             rarity_color,
             12,
-            width=rect["right"] - rect["left"] - 22,
+            width=int(rect["right"] - rect["left"] - 22),
             multiline=True,
         ).draw()
         arcade.Text(
@@ -509,7 +507,7 @@ class BuildView(arcade.View):
                 header["top"] - 22,
                 text_color,
                 12,
-                width=header["right"] - header["left"] - 138,
+                width=int(header["right"] - header["left"] - 138),
                 multiline=True,
             ).draw()
             arcade.Text(
@@ -775,13 +773,13 @@ class BuildView(arcade.View):
                 equipped_item = self.selected_items.get(target_slot)
                 if equipped_item is None:
                     self.selected_items[target_slot] = self.dragged_item
-                    self.message = f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                    self.message = (
+                        f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                    )
                 else:
                     merged_item = self._merged_item(equipped_item, self.dragged_item)
                     if merged_item is None:
-                        self.message = (
-                            f"No merge recipe for {equipped_item.name} + {self.dragged_item.name}."
-                        )
+                        self.message = f"No merge recipe for {equipped_item.name} + {self.dragged_item.name}."
                     else:
                         self.selected_items[target_slot] = merged_item
                         self.message = (

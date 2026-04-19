@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import random
 
-from autochess.systems.generator import generate_character, parse_generator_config
+import pytest
+
+from autochess.systems.generator import generate_character, parse_generator_config, parse_items
 from autochess.systems.loader import load_json
 
 
@@ -24,3 +26,11 @@ def test_generate_character_respects_aux_caps() -> None:
     for stat, value in aux.items():
         cap = cfg.aux_caps[stat]
         assert cap["min"] <= value <= cap["max"]
+
+
+def test_parse_items_rejects_invalid_slot_type() -> None:
+    raw = load_json("data/items.json")["items"]
+    raw[0]["slot_type"] = "feet"
+
+    with pytest.raises(ValueError, match="invalid slot_type"):
+        parse_items(raw)

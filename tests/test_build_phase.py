@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from autochess.models import ITEM_SLOTS
 from autochess.systems.build_phase import (
     BUILD_OFFER_COUNT,
@@ -76,3 +78,37 @@ def test_apply_build_selection_to_character_clears_unselected_slots() -> None:
     assert preview.item_slots["heart"] is items["item_ardent_heart"]
     assert preview.item_slots["legs"] is None
     assert preview.item_slots["body"] is None
+
+
+def test_clone_character_for_build_copies_inventory() -> None:
+    character, _aux_caps, items = _build_character()
+    bag_item = items["item_frenzy_tendons"]
+    character.inventory.append(bag_item)
+
+    preview = clone_character_for_build(character)
+
+    assert preview.inventory == [bag_item]
+
+
+def test_apply_build_selection_to_character_rejects_invalid_slot() -> None:
+    character, aux_caps, items = _build_character()
+    preview = clone_character_for_build(character)
+
+    with pytest.raises(ValueError, match="unknown slot"):
+        apply_build_selection_to_character(
+            character=preview,
+            selected_items={"feet": items["item_frenzy_tendons"]},
+            aux_caps=aux_caps,
+        )
+
+
+def test_apply_build_selection_to_character_rejects_slot_mismatch() -> None:
+    character, aux_caps, items = _build_character()
+    preview = clone_character_for_build(character)
+
+    with pytest.raises(ValueError, match="cannot be equipped"):
+        apply_build_selection_to_character(
+            character=preview,
+            selected_items={"heart": items["item_frenzy_tendons"]},
+            aux_caps=aux_caps,
+        )

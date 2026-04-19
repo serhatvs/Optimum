@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
-from autochess.models import AUX_STATS, AuxStats, Character, CoreStats
+from autochess.models import AUX_STATS, ITEM_SLOTS, AuxStats, Character, CoreStats
 
 
 Rarity = Literal["common", "rare", "epic", "legendary"]
@@ -111,6 +111,10 @@ def parse_shop_items(raw_data: dict, *, expected_count: int = 15) -> dict[str, S
         slot_type = _expect_str(
             item_obj.get("slot_type"), context=f"items[{idx}].slot_type"
         )
+        if slot_type not in ITEM_SLOTS:
+            raise ValueError(
+                f"items[{idx}].slot_type has invalid value '{slot_type}'"
+            )
         rarity_raw = _expect_str(item_obj.get("rarity"), context=f"items[{idx}].rarity")
         rarity = rarity_raw.lower()
         if rarity not in RARITY_BASE_PRICES:

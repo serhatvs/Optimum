@@ -13,6 +13,7 @@ from autochess.systems.build_phase import (
     get_build_recommendation,
     roll_build_offers,
 )
+from autochess.systems.merging import get_merged_item
 from autochess.views.game_view import GameView
 
 
@@ -195,16 +196,6 @@ class BuildView(arcade.View):
             if self._rect_contains(self._slot_rect(slot), x, y):
                 return slot
         return None
-
-    def _merging_key(self, item_1: Item, item_2: Item) -> tuple[str, str]:
-        return tuple(sorted((item_1.item_id, item_2.item_id)))
-
-    def _merged_item(self, equipped_item: Item, incoming_item: Item) -> Item | None:
-        recipe_key = self._merging_key(equipped_item, incoming_item)
-        result_id = self.match_state.item_mergings.get(recipe_key)
-        if result_id is None:
-            return None
-        return self.match_state.item_catalog.get(result_id)
 
     def _preview_character(self) -> Character | None:
         if not self.human_player:

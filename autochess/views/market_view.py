@@ -146,9 +146,7 @@ class MarketView(arcade.View):
         except ValueError:
             self.message = f"Not enough gold for {item.name}."
             return
-
         self.message = f"Bought {item.name} for {get_market_price(item)} gold and added to inventory."
-        )
         self.match_state.history.append(
             f"{self.human_player.name} bought {item.name} for {get_market_price(item)} gold"
         )
@@ -234,14 +232,18 @@ class MarketView(arcade.View):
                 rarity_color = self._item_color(item)
                 price_text = f"{item.rarity.title()}  {get_market_price(item)}g"
                 slot_text = f"Slot: {item.slot_type.title()}"
-                modifiers = [self._modifier_label(modifier) for modifier in item.modifiers[:3]]
+                modifiers = [
+                    self._modifier_label(modifier) for modifier in item.modifiers[:3]
+                ]
                 equipped = (
                     self.human_player.character.item_slots.get(item.slot_type)
                     if self.human_player
                     else None
                 )
                 replace_text = (
-                    f"Equipped: {equipped.name}" if equipped is not None else "Equipped: Empty"
+                    f"Equipped: {equipped.name}"
+                    if equipped is not None
+                    else "Equipped: Empty"
                 )
 
             arcade.Text(

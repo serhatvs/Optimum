@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
-from autochess.models import AUX_STATS, Character, CoreStats, Item, Modifier, AuxStats
+from autochess.models import AUX_STATS, ITEM_SLOTS, AuxStats, Character, CoreStats, Item, Modifier
 
 
 @dataclass(frozen=True)
@@ -29,6 +29,11 @@ def parse_generator_config(raw: dict) -> GeneratorConfig:
 def parse_items(raw_items: list[dict]) -> dict[str, Item]:
     result: dict[str, Item] = {}
     for data in raw_items:
+        slot_type = data["slot_type"]
+        if slot_type not in ITEM_SLOTS:
+            raise ValueError(
+                f"item '{data['id']}' has invalid slot_type '{slot_type}'; expected one of {ITEM_SLOTS}"
+            )
         modifiers = [
             Modifier(
                 stat=mod["stat"],
@@ -42,7 +47,7 @@ def parse_items(raw_items: list[dict]) -> dict[str, Item]:
         result[data["id"]] = Item(
             item_id=data["id"],
             name=data["name"],
-            slot_type=data["slot_type"],
+            slot_type=slot_type,
             rarity=data["rarity"],
             modifiers=modifiers,
             unique=bool(data.get("unique", False)),

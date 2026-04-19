@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import random
 
+from autochess.models import Item, Modifier
 from autochess.systems.generator import (
     generate_character,
     parse_generator_config,
-    parse_items,
 )
 from autochess.systems.loader import load_json
 from autochess.systems.modifiers import equip_item, recompute_aux_stats
@@ -13,7 +13,6 @@ from autochess.systems.modifiers import equip_item, recompute_aux_stats
 
 def test_recompute_aux_stats_changes_values() -> None:
     cfg = parse_generator_config(load_json("data/archetypes.json"))
-    items = parse_items(load_json("data/items.json")["items"])
     rng = random.Random(123)
 
     character = generate_character(
@@ -27,7 +26,29 @@ def test_recompute_aux_stats_changes_values() -> None:
     )
 
     before = character.aux_stats.as_dict()
-    equip_item(character, items["item_frenzy_dagger"])
+    equip_item(
+        character,
+        Item(
+            item_id="item_test_frenzy",
+            name="Test Frenzy",
+            slot_type="weapon",
+            rarity="common",
+            modifiers=[
+                Modifier(
+                    stat="attack_speed",
+                    mode="percent",
+                    value=0.22,
+                    source="item_test_frenzy",
+                ),
+                Modifier(
+                    stat="lifesteal",
+                    mode="percent",
+                    value=-0.08,
+                    source="item_test_frenzy",
+                ),
+            ],
+        ),
+    )
     recompute_aux_stats(character, cfg.aux_caps)
     after = character.aux_stats.as_dict()
 

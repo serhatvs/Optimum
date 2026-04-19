@@ -102,8 +102,18 @@ class Player:
     character: Character
     hp: int = 100
     gold: int = 0
+    bounty: int = 0
     eliminated: bool = False
     infinite_health: bool = False
+
+
+@dataclass
+class KillEvent:
+    killer_id: str
+    victim_id: str
+    victim_bounty_at_kill: int
+    gold_reward: int
+    bounty_gain: int
 
 
 @dataclass

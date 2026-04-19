@@ -198,11 +198,11 @@ class GameView(arcade.View):
             return "ELIM"
         return str(player.hp)
 
-    def _player_item_summary(self, player) -> str:
-        names = [item.name for item in player.character.equipped_items()]
-        if not names:
-            return "No items equipped"
-        return self._truncate_text(", ".join(names), 26)
+    def _player_bounty_label(self, player) -> str:
+        arena_unit = self._player_arena_unit(player)
+        if arena_unit:
+            return str(arena_unit.bounty)
+        return str(player.bounty)
 
     def _player_health_ratio(self, player) -> float:
         arena_unit = self._player_arena_unit(player)
@@ -303,7 +303,7 @@ class GameView(arcade.View):
             9,
         ).draw()
         arcade.Text(
-            f"Items: {self._player_item_summary(player)}",
+            f"Gold {player.gold}  Bounty {self._player_bounty_label(player)}",
             card_x,
             bottom + 16,
             arcade.color.GRAY,
@@ -612,7 +612,7 @@ class GameView(arcade.View):
             self.last_events = self.last_events[-12:]
 
         if self.arena.finished and not self.round_committed and self.arena.winner_id:
-            round_events = apply_arena_result(self.match_state, self.arena.winner_id)
+            round_events = apply_arena_result(self.match_state, self.arena)
             self.last_events.extend(round_events)
             self.last_events = self.last_events[-12:]
             self.round_committed = True
@@ -639,9 +639,7 @@ class GameView(arcade.View):
                 while not self.arena.finished:
                     self.arena.step(0.2)
             if self.arena and self.arena.winner_id and not self.round_committed:
-                round_events = apply_arena_result(
-                    self.match_state, self.arena.winner_id
-                )
+                round_events = apply_arena_result(self.match_state, self.arena)
                 self.last_events.extend(round_events)
                 self.last_events = self.last_events[-12:]
                 self.round_committed = True

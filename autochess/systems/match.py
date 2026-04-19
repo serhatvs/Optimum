@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from autochess.models import MatchState, Player
+from autochess.systems.arena import ArenaSimulation
 from autochess.systems.combat import run_duel
 
 
@@ -56,3 +57,35 @@ def get_winner(match: MatchState) -> Player | None:
     if len(remaining) == 1:
         return remaining[0]
     return None
+
+
+def apply_arena_result(match: MatchState, winner_player_id: str) -> list[str]:
+    events = [f"Round {match.round_number} arena resolved"]
+    for player in match.active_players():
+        if player.player_id == winner_player_id:
+            continue
+        player.hp = max(0, player.hp - ROUND_LOSS_DAMAGE)
+        events.append(f"{player.name} loses {ROUND_LOSS_DAMAGE} hp -> {player.hp}")
+        if player.hp == 0:
+            player.eliminated = True
+            events.append(f"{player.name} was eliminated")
+    match.round_number += 1
+    match.history.extend(events)
+    return events
+
+
+def create_arena_for_round(
+    match: MatchState,
+    left: float,
+    right: float,
+    bottom: float,
+    top: float,
+) -> ArenaSimulation:
+    return ArenaSimulation(
+        players=match.active_players(),
+        seed=match.seed + match.round_number * 1409,
+        left=left,
+        right=right,
+        bottom=bottom,
+        top=top,
+    )

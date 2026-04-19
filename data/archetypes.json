@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "global_rules": {
+    "aux_stat_caps": {
+      "attack_speed": { "min": 0.2, "max": 5.0 },
+      "agility": { "min": 0, "max": 300 },
+      "crit_chance": { "min": 0.0, "max": 0.75 },
+      "mana_gain": { "min": 0.0, "max": 3.0 },
+      "lifesteal": { "min": 0.0, "max": 0.4 }
+    },
+    "tier_multipliers": {
+      "1": { "max_hp": 1.0, "atk": 1.0, "def": 1.0, "aux": 1.0 },
+      "2": { "max_hp": 1.18, "atk": 1.14, "def": 1.12, "aux": 1.07 },
+      "3": { "max_hp": 1.4, "atk": 1.28, "def": 1.24, "aux": 1.14 },
+      "4": { "max_hp": 1.66, "atk": 1.44, "def": 1.38, "aux": 1.22 },
+      "5": { "max_hp": 1.95, "atk": 1.62, "def": 1.54, "aux": 1.3 }
+    },
+    "star_multipliers": {
+      "1": { "max_hp": 1.0, "atk": 1.0, "def": 1.0 },
+      "2": { "max_hp": 1.7, "atk": 1.5, "def": 1.4 },
+      "3": { "max_hp": 2.8, "atk": 2.2, "def": 2.0 }
+    }
+  },
+  "archetypes": [
+    {
+      "name": "Bruiser",
+      "core_ranges": { "max_hp": [780, 980], "atk": [70, 95], "def": [30, 45] },
+      "aux_ranges": {
+        "attack_speed": [0.95, 1.25],
+        "agility": [35, 65],
+        "crit_chance": [0.06, 0.14],
+        "mana_gain": [0.85, 1.15],
+        "lifesteal": [0.04, 0.1]
+      }
+    },
+    {
+      "name": "Assassin",
+      "core_ranges": { "max_hp": [520, 700], "atk": [88, 120], "def": [16, 28] },
+      "aux_ranges": {
+        "attack_speed": [1.2, 1.7],
+        "agility": [70, 110],
+        "crit_chance": [0.16, 0.3],
+        "mana_gain": [0.75, 1.05],
+        "lifesteal": [0.02, 0.08]
+      }
+    },
+    {
+      "name": "Tank",
+      "core_ranges": { "max_hp": [980, 1300], "atk": [50, 72], "def": [48, 72] },
+      "aux_ranges": {
+        "attack_speed": [0.65, 0.95],
+        "agility": [12, 35],
+        "crit_chance": [0.02, 0.08],
+        "mana_gain": [0.95, 1.3],
+        "lifesteal": [0.03, 0.09]
+      }
+    },
+    {
+      "name": "Ranger",
+      "core_ranges": { "max_hp": [580, 760], "atk": [76, 104], "def": [20, 34] },
+      "aux_ranges": {
+        "attack_speed": [1.1, 1.45],
+        "agility": [60, 95],
+        "crit_chance": [0.12, 0.24],
+        "mana_gain": [0.85, 1.15],
+        "lifesteal": [0.03, 0.09]
+      }
+    },
+    {
+      "name": "Caster",
+      "core_ranges": { "max_hp": [540, 740], "atk": [60, 86], "def": [18, 32] },
+      "aux_ranges": {
+        "attack_speed": [0.8, 1.05],
+        "agility": [28, 55],
+        "crit_chance": [0.04, 0.12],
+        "mana_gain": [1.2, 1.8],
+        "lifesteal": [0.0, 0.06]
+      }
+    },
+    {
+      "name": "Hybrid",
+      "core_ranges": { "max_hp": [700, 920], "atk": [68, 94], "def": [26, 40] },
+      "aux_ranges": {
+        "attack_speed": [0.95, 1.3],
+        "agility": [42, 75],
+        "crit_chance": [0.08, 0.18],
+        "mana_gain": [0.95, 1.3],
+        "lifesteal": [0.03, 0.1]
+      }
+    }
+  ]
+}

@@ -6,7 +6,10 @@ import arcade
 from arcade.types.color import Color
 
 from autochess.models import MatchState
-from autochess.systems.arena import ArenaSimulation
+from autochess.systems.arena import (
+    CORPSE_FADE_DURATION,
+    ArenaSimulation,
+)
 from autochess.systems.match import (
     apply_arena_result,
     create_arena_for_round,
@@ -68,6 +71,82 @@ class GameView(arcade.View):
             1,
         )
 
+    def _player_name(self, player_id: str | None) -> str:
+        if not player_id:
+            return "Unknown"
+        for player in self.match_state.players:
+            if player.player_id == player_id:
+                return player.name
+        return player_id
+
+    def _status_text(self) -> str:
+        if get_winner(self.match_state):
+            return "Match complete."
+        if self.arena and self.arena.finished and self.round_committed:
+            return "Round complete. Press SPACE for the next round."
+        return "Arena fights automatically. Press SPACE to skip round."
+
+    def _draw_result_overlay(self) -> None:
+        if not self.arena or not self.arena.finished or not self.round_committed:
+            return
+
+        winner = get_winner(self.match_state)
+        last_round = self.match_state.round_number - 1
+        if winner:
+            title = "Match Finished"
+            subtitle = f"Champion: {winner.name}"
+            color = arcade.color.GOLD
+        else:
+            title = f"Round {last_round} Complete"
+            subtitle = f"Arena winner: {self._player_name(self.arena.winner_id)}"
+            color = arcade.color.LIGHT_CYAN
+
+        overlay_left = self.arena.left + 110
+        overlay_right = self.arena.right - 110
+        overlay_bottom = self.arena.bottom + 120
+        overlay_top = self.arena.top - 120
+        arcade.draw_lrbt_rectangle_filled(
+            overlay_left,
+            overlay_right,
+            overlay_bottom,
+            overlay_top,
+            (8, 12, 18, 230),
+        )
+        arcade.draw_lrbt_rectangle_outline(
+            overlay_left,
+            overlay_right,
+            overlay_bottom,
+            overlay_top,
+            arcade.color.WHITE_SMOKE,
+            2,
+        )
+        center_x = (overlay_left + overlay_right) / 2
+        center_y = (overlay_bottom + overlay_top) / 2
+        arcade.Text(
+            title,
+            center_x,
+            center_y + 32,
+            color,
+            28,
+            anchor_x="center",
+        ).draw()
+        arcade.Text(
+            subtitle,
+            center_x,
+            center_y - 4,
+            arcade.color.WHITE_SMOKE,
+            18,
+            anchor_x="center",
+        ).draw()
+        arcade.Text(
+            self._status_text(),
+            center_x,
+            center_y - 36,
+            arcade.color.LIGHT_GRAY,
+            14,
+            anchor_x="center",
+        ).draw()
+
     def on_draw(self) -> None:
         self.clear((24, 30, 34))
         title = f"Round {self.match_state.round_number}"
@@ -127,13 +206,15 @@ class GameView(arcade.View):
             ).draw()
         else:
             arcade.Text(
-                "Arena fights automatically. Press SPACE to skip round.",
+                self._status_text(),
                 self.window.width / 2,
                 40,
                 arcade.color.LIGHT_GRAY,
                 14,
                 anchor_x="center",
             ).draw()
+
+        self._draw_result_overlay()
 
     def _draw_arena(self) -> None:
         if not self.arena:
@@ -168,8 +249,12 @@ class GameView(arcade.View):
                     )
 
         for unit in self.arena.units.values():
+            if not unit.alive and unit.corpse_timer <= 0:
+                continue
+
             if not unit.alive:
-                tint = Color(90, 90, 90, 160)
+                alpha = int(180 * (unit.corpse_timer / CORPSE_FADE_DURATION))
+                tint = Color(90, 90, 90, alpha)
             elif unit.flash_timer > 0:
                 tint = Color(255, 130, 130, 255)
             else:
@@ -186,16 +271,15 @@ class GameView(arcade.View):
                 color = (
                     arcade.color.DARK_SPRING_GREEN
                     if unit.alive
-                    else arcade.color.DARK_SLATE_GRAY
+                    else Color(90, 90, 90, tint.a)
                 )
                 arcade.draw_circle_filled(unit.x, unit.y, 13, color)
 
-            hp_ratio = unit.hp / max(1, unit.max_hp)
-            self._draw_health_bar(unit.x - 18, unit.y + 24, 36, hp_ratio)
+            if unit.alive:
+                hp_ratio = unit.hp / max(1, unit.max_hp)
+                self._draw_health_bar(unit.x - 18, unit.y + 24, 36, hp_ratio)
 
     def on_update(self, delta_time: float) -> None:
-        if get_winner(self.match_state):
-            return
         if not self.arena:
             return
 
@@ -209,6 +293,9 @@ class GameView(arcade.View):
             self.last_events.extend(round_events)
             self.last_events = self.last_events[-12:]
             self.round_committed = True
+
+        if get_winner(self.match_state):
+            return
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if symbol == arcade.key.SPACE and not get_winner(self.match_state):

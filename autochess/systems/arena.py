@@ -6,6 +6,10 @@ from dataclasses import dataclass
 
 from autochess.models import Player
 
+ATTACK_RANGE = 34.0
+RANGE_EPSILON = 1e-6
+CORPSE_FADE_DURATION = 3.0
+
 
 @dataclass
 class ArenaUnit:
@@ -24,6 +28,7 @@ class ArenaUnit:
     alive: bool = True
     attack_cooldown: float = 0.0
     flash_timer: float = 0.0
+    corpse_timer: float = 0.0
     target_id: str | None = None
 
 
@@ -78,7 +83,14 @@ class ArenaSimulation:
     def alive_units(self) -> list[ArenaUnit]:
         return [unit for unit in self.units.values() if unit.alive]
 
+    def _advance_timers(self, delta_time: float) -> None:
+        for unit in self.units.values():
+            unit.flash_timer = max(0.0, unit.flash_timer - delta_time)
+            if not unit.alive and unit.corpse_timer > 0:
+                unit.corpse_timer = max(0.0, unit.corpse_timer - delta_time)
+
     def step(self, delta_time: float) -> list[str]:
+        self._advance_timers(delta_time)
         if self.finished:
             return []
 
@@ -89,7 +101,6 @@ class ArenaSimulation:
             if not unit.alive:
                 continue
             unit.attack_cooldown = max(0.0, unit.attack_cooldown - delta_time)
-            unit.flash_timer = max(0.0, unit.flash_timer - delta_time)
 
             target = self._pick_target(unit)
             unit.target_id = target.player_id if target else None
@@ -99,11 +110,12 @@ class ArenaSimulation:
             dx = target.x - unit.x
             dy = target.y - unit.y
             dist = math.hypot(dx, dy)
-            attack_range = 34.0
 
-            if dist > attack_range:
+            # Treat near-equal distances as in-range so floating point drift
+            # cannot leave units permanently stuck on the attack boundary.
+            if dist > ATTACK_RANGE + RANGE_EPSILON:
                 move_speed = 70.0 + unit.agility * 0.9
-                step_dist = min(dist - attack_range, move_speed * delta_time)
+                step_dist = min(dist - ATTACK_RANGE, move_speed * delta_time)
                 if dist > 0:
                     unit.x += dx / dist * step_dist
                     unit.y += dy / dist * step_dist
@@ -135,6 +147,8 @@ class ArenaSimulation:
             unit.attack_cooldown = max(0.15, 1.0 / unit.attack_speed)
             if target.hp <= 0 and target.alive:
                 target.alive = False
+                target.target_id = None
+                target.corpse_timer = CORPSE_FADE_DURATION
                 events.append(f"{target.name} is down")
 
         alive = self.alive_units()

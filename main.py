@@ -13,7 +13,7 @@ SCREEN_TITLE = "Pixel FFA Auto-Chess"
 
 
 def main() -> None:
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True)
     data_dir = Path(__file__).parent / "data"
     window.show_view(MenuView(data_dir=data_dir))
     arcade.run()

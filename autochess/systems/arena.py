@@ -4,11 +4,18 @@ import math
 import random
 from dataclasses import dataclass
 
-from autochess.models import Player
+from autochess.models import KillEvent, Player
+from autochess.systems.bounty import (
+    apply_bounty_death_penalty,
+    build_kill_event,
+)
 
 ATTACK_RANGE = 34.0
 RANGE_EPSILON = 1e-6
 CORPSE_FADE_DURATION = 3.0
+AGGRO_DISTANCE_WEIGHT = 0.75
+AGGRO_BOUNTY_WEIGHT = 0.25
+AGGRO_SWITCH_THRESHOLD = 0.15
 
 
 @dataclass
@@ -25,6 +32,7 @@ class ArenaUnit:
     agility: float
     crit_chance: float
     lifesteal: float
+    bounty: int = 0
     invulnerable: bool = False
     alive: bool = True
     attack_cooldown: float = 0.0
@@ -51,6 +59,7 @@ class ArenaSimulation:
         self.time_elapsed = 0.0
         self.finished = False
         self.winner_id: str | None = None
+        self.kill_events: list[KillEvent] = []
         self.units = self._spawn_units(players)
 
     def _spawn_units(self, players: list[Player]) -> dict[str, ArenaUnit]:
@@ -78,12 +87,56 @@ class ArenaSimulation:
                 agility=character.aux_stats.agility,
                 crit_chance=character.aux_stats.crit_chance,
                 lifesteal=character.aux_stats.lifesteal,
+                bounty=player.bounty,
                 invulnerable=player.infinite_health,
             )
         return units
 
     def alive_units(self) -> list[ArenaUnit]:
         return [unit for unit in self.units.values() if unit.alive]
+
+    def _arena_diagonal(self) -> float:
+        return max(1.0, math.hypot(self.right - self.left, self.top - self.bottom))
+
+    def _target_score(
+        self,
+        source: ArenaUnit,
+        candidate: ArenaUnit,
+        *,
+        highest_bounty: int,
+    ) -> tuple[float, float]:
+        distance = math.hypot(candidate.x - source.x, candidate.y - source.y)
+        distance_score = 1.0 - min(1.0, distance / self._arena_diagonal())
+        bounty_score = candidate.bounty / max(1, highest_bounty)
+        total_score = (
+            AGGRO_DISTANCE_WEIGHT * distance_score
+            + AGGRO_BOUNTY_WEIGHT * bounty_score
+        )
+        return total_score, distance
+
+    def _register_kill(
+        self,
+        *,
+        killer: ArenaUnit,
+        victim: ArenaUnit,
+        events: list[str],
+    ) -> None:
+        kill_event = build_kill_event(
+            killer_id=killer.player_id,
+            victim_id=victim.player_id,
+            killer_bounty=killer.bounty,
+            victim_bounty=victim.bounty,
+        )
+        self.kill_events.append(kill_event)
+        killer.bounty += kill_event.bounty_gain
+        victim.bounty = apply_bounty_death_penalty(victim.bounty)
+        victim.alive = False
+        victim.target_id = None
+        victim.corpse_timer = CORPSE_FADE_DURATION
+        events.append(f"{victim.name} is down")
+        events.append(
+            f"{killer.name} tags +{kill_event.bounty_gain} bounty and {kill_event.gold_reward} gold"
+        )
 
     def _advance_timers(self, delta_time: float) -> None:
         for unit in self.units.values():
@@ -153,10 +206,7 @@ class ArenaSimulation:
 
             unit.attack_cooldown = max(0.15, 1.0 / unit.attack_speed)
             if target.hp <= 0 and target.alive:
-                target.alive = False
-                target.target_id = None
-                target.corpse_timer = CORPSE_FADE_DURATION
-                events.append(f"{target.name} is down")
+                self._register_kill(killer=unit, victim=target, events=events)
 
         alive = self.alive_units()
         if len(alive) <= 1 or self.time_elapsed >= 90.0:
@@ -179,7 +229,38 @@ class ArenaSimulation:
         ]
         if not candidates:
             return None
-        return min(
-            candidates,
-            key=lambda unit: (unit.x - source.x) ** 2 + (unit.y - source.y) ** 2,
+
+        highest_bounty = max(unit.bounty for unit in candidates)
+        scored_candidates: list[tuple[ArenaUnit, float, float]] = []
+        for candidate in candidates:
+            score, distance = self._target_score(
+                source,
+                candidate,
+                highest_bounty=highest_bounty,
+            )
+            scored_candidates.append((candidate, score, distance))
+
+        best_candidate, best_score, _ = min(
+            scored_candidates,
+            key=lambda entry: (
+                -entry[1],
+                entry[2],
+                -entry[0].bounty,
+                entry[0].player_id,
+            ),
         )
+
+        current_target = self.units.get(source.target_id) if source.target_id else None
+        if current_target and current_target.alive and current_target.player_id != source.player_id:
+            current_score, _ = self._target_score(
+                source,
+                current_target,
+                highest_bounty=highest_bounty,
+            )
+            if (
+                current_target.player_id == best_candidate.player_id
+                or best_score < current_score + AGGRO_SWITCH_THRESHOLD
+            ):
+                return current_target
+
+        return best_candidate

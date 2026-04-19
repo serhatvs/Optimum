@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import random
 
-from autochess.models import MatchState, Player
+from autochess.models import KillEvent, MatchState, Player
 from autochess.systems.arena import ArenaSimulation
+from autochess.systems.bounty import (
+    apply_bounty_death_penalty,
+    build_kill_event,
+)
 from autochess.systems.combat import run_duel
 
 
@@ -14,11 +18,33 @@ def player_has_infinite_health(player: Player) -> bool:
     return player.infinite_health
 
 
+def _players_by_id(match: MatchState) -> dict[str, Player]:
+    return {player.player_id: player for player in match.players}
+
+
+def _apply_kill_rewards(
+    *,
+    players_by_id: dict[str, Player],
+    kill_events: list[KillEvent],
+    events: list[str],
+) -> None:
+    for kill_event in kill_events:
+        killer = players_by_id.get(kill_event.killer_id)
+        victim = players_by_id.get(kill_event.victim_id)
+        if not killer or not victim:
+            continue
+        killer.gold += kill_event.gold_reward
+        events.append(
+            f"{killer.name} banks {kill_event.gold_reward} gold from {victim.name}'s bounty"
+        )
+
+
 def run_match_round(match: MatchState) -> list[str]:
     rng = random.Random(match.seed + match.round_number)
     players = match.active_players()
     rng.shuffle(players)
     events: list[str] = [f"Round {match.round_number}"]
+    players_by_id = _players_by_id(match)
 
     if len(players) <= 1:
         return events
@@ -42,6 +68,23 @@ def run_match_round(match: MatchState) -> list[str]:
             winner, loser = left, right
         else:
             winner, loser = right, left
+
+        kill_event = build_kill_event(
+            killer_id=winner.player_id,
+            victim_id=loser.player_id,
+            killer_bounty=winner.bounty,
+            victim_bounty=loser.bounty,
+        )
+        winner.bounty += kill_event.bounty_gain
+        loser.bounty = apply_bounty_death_penalty(loser.bounty)
+        _apply_kill_rewards(
+            players_by_id=players_by_id,
+            kill_events=[kill_event],
+            events=events,
+        )
+        events.append(
+            f"{winner.name} claims +{kill_event.bounty_gain} bounty from {loser.name}"
+        )
 
         if player_has_infinite_health(loser):
             events.append(
@@ -84,8 +127,20 @@ def is_match_over(match: MatchState) -> bool:
     return player_was_eliminated(match) or get_winner(match) is not None
 
 
-def apply_arena_result(match: MatchState, winner_player_id: str) -> list[str]:
+def apply_arena_result(match: MatchState, arena: ArenaSimulation) -> list[str]:
     events = [f"Round {match.round_number} arena resolved"]
+    winner_player_id = arena.winner_id
+    players_by_id = _players_by_id(match)
+
+    _apply_kill_rewards(
+        players_by_id=players_by_id,
+        kill_events=arena.kill_events,
+        events=events,
+    )
+    for player_id, unit in arena.units.items():
+        if player_id in players_by_id:
+            players_by_id[player_id].bounty = unit.bounty
+
     for player in match.active_players():
         if player.player_id == winner_player_id:
             continue

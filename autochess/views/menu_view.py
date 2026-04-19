@@ -151,7 +151,6 @@ class MenuView(arcade.View):
                 text_color,
                 18,
                 anchor_x="center",
-
             ).draw()
 
         footer_text = (

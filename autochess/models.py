@@ -1,13 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import Optional
-
-
-class Environment(Enum):
-    DESERT = auto()
-    FOREST = auto()
 
 
 AUX_STATS = ("attack_speed", "agility", "crit_chance", "mana_gain", "lifesteal")
@@ -84,7 +78,6 @@ class Character:
     current_hp: int = 0
     mana: float = 0.0
     alive: bool = True
-    texture_index: int = 0
 
     def __post_init__(self) -> None:
         if not self.current_hp:

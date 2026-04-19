@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from autochess.models import AuxStats, Character, CoreStats, Player, Environment
+from autochess.models import AuxStats, Character, CoreStats, Player
 from autochess.systems.arena import ArenaSimulation
 
 
@@ -10,7 +10,6 @@ def _build_player(
     *,
     bounty: int = 0,
     max_hp: int = 100,
-    infinite_health: bool = False,
 ) -> Player:
     character = Character(
         char_id=f"char_{player_id}",
@@ -55,7 +54,6 @@ def test_units_attack_when_distance_is_only_float_noise_above_range() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -82,7 +80,6 @@ def test_dead_units_fade_out_over_three_seconds() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -117,7 +114,6 @@ def test_invulnerable_units_ignore_arena_damage() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -147,7 +143,6 @@ def test_infinite_health_players_still_take_arena_damage() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -176,7 +171,6 @@ def test_kill_updates_bounty_gain_and_halves_victim_bounty() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -208,7 +202,6 @@ def test_weighted_aggro_prefers_higher_bounty_at_same_distance() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -238,7 +231,6 @@ def test_weighted_aggro_can_prefer_farther_high_bounty_target() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -268,7 +260,6 @@ def test_weighted_aggro_prefers_lower_absolute_hp_not_lower_percentage() -> None
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
@@ -300,11 +291,9 @@ def test_sticky_aggro_keeps_current_target_for_small_score_gap() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]
-
     bravo = arena.units["player_b"]
     charlie = arena.units["player_c"]
     alpha.x = 50.0
@@ -332,7 +321,6 @@ def test_sticky_aggro_switches_for_much_better_target() -> None:
         right=200,
         bottom=0,
         top=200,
-        environment=Environment.DESERT,
     )
 
     alpha = arena.units["player_a"]

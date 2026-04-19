@@ -196,15 +196,6 @@ class MarketView(arcade.View):
             18,
             anchor_x="center",
         ).draw()
-        gold_total = self.human_player.gold if self.human_player else 0
-        arcade.Text(
-            f"Gold: {gold_total}",
-            self.window.width / 2,
-            self.layout["title_y"] - 34,
-            arcade.color.GOLD,
-            18,
-            anchor_x="center",
-        ).draw()
 
         cards = self._offer_cards()
         for index, rect in enumerate(cards):
@@ -248,18 +239,14 @@ class MarketView(arcade.View):
                 rarity_color = self._item_color(item)
                 price_text = f"{item.rarity.title()}  {get_market_price(item)}g"
                 slot_text = f"Slot: {item.slot_type.title()}"
-                modifiers = [
-                    self._modifier_label(modifier) for modifier in item.modifiers[:3]
-                ]
+                modifiers = [self._modifier_label(modifier) for modifier in item.modifiers[:3]]
                 equipped = (
                     self.human_player.character.item_slots.get(item.slot_type)
                     if self.human_player
                     else None
                 )
                 replace_text = (
-                    f"Equipped: {equipped.name}"
-                    if equipped is not None
-                    else "Equipped: Empty"
+                    f"Equipped: {equipped.name}" if equipped is not None else "Equipped: Empty"
                 )
 
             arcade.Text(
@@ -268,7 +255,6 @@ class MarketView(arcade.View):
                 rect["top"] - 30,
                 rarity_color,
                 15,
-
             ).draw()
             arcade.Text(
                 price_text,
@@ -276,7 +262,6 @@ class MarketView(arcade.View):
                 rect["top"] - 58,
                 arcade.color.LIGHT_GRAY,
                 11,
-
             ).draw()
             arcade.Text(
                 slot_text,
@@ -284,7 +269,6 @@ class MarketView(arcade.View):
                 rect["top"] - 82,
                 arcade.color.GRAY,
                 11,
-
             ).draw()
             arcade.Text(
                 replace_text,
@@ -292,7 +276,6 @@ class MarketView(arcade.View):
                 rect["top"] - 106,
                 arcade.color.GRAY_BLUE,
                 10,
-
             ).draw()
 
             line_y = rect["top"] - 146
@@ -303,7 +286,6 @@ class MarketView(arcade.View):
                     line_y,
                     arcade.color.WHITE_SMOKE,
                     11,
-    
                 ).draw()
                 line_y -= 24
 
@@ -340,7 +322,6 @@ class MarketView(arcade.View):
                 arcade.color.WHITE,
                 14,
                 anchor_x="center",
-
             ).draw()
 
         arcade.Text(
@@ -349,14 +330,6 @@ class MarketView(arcade.View):
             110,
             arcade.color.LIGHT_GRAY,
             12,
-            anchor_x="center",
-        ).draw()
-        arcade.Text(
-            "Use 1-3 to buy, R to reroll, and SPACE to continue.",
-            self.window.width / 2,
-            82,
-            arcade.color.GRAY,
-            11,
             anchor_x="center",
         ).draw()
         arcade.Text(

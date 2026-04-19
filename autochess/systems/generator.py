@@ -138,3 +138,15 @@ def assign_random_items(
         if rng.random() < 0.7:
             character.item_slots[slot] = rng.choice(available)
             max_items -= 1
+
+
+def draw_random_item_for_slot(
+    rng: random.Random,
+    items: dict[str, Item],
+    *,
+    slot_type: str,
+) -> Item | None:
+    available = [item for item in items.values() if item.slot_type == slot_type]
+    if not available:
+        return None
+    return rng.choice(available)

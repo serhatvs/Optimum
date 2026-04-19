@@ -151,6 +151,207 @@
         { "stat": "attack_speed", "mode": "percent", "value": -0.22 },
         { "stat": "crit_chance", "mode": "flat", "value": 0.05 }
       ]
+    },
+    {
+      "id": "item_frenzied_moonstep_tendons",
+      "name": "Frenzied Moonstep Tendons",
+      "slot_type": "legs",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "attack_speed", "mode": "percent", "value": 0.22 },
+        { "stat": "lifesteal", "mode": "percent", "value": -0.08 },
+        { "stat": "agility", "mode": "percent", "value": 0.18 },
+        { "stat": "mana_gain", "mode": "percent", "value": -0.15 }
+      ]
+    },
+    {
+      "id": "item_ravens_frenzy",
+      "name": "Raven's Frenzy",
+      "slot_type": "legs",
+      "rarity": "rare",
+      "modifiers": [
+        { "stat": "attack_speed", "mode": "percent", "value": 0.38 },
+        { "stat": "lifesteal", "mode": "percent", "value": -0.08 },
+        { "stat": "mana_gain", "mode": "percent", "value": -0.1 }
+      ]
+    },
+    {
+      "id": "item_ravens_moonstep",
+      "name": "Raven's Moonstep",
+      "slot_type": "legs",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "agility", "mode": "percent", "value": 0.18 },
+        { "stat": "mana_gain", "mode": "percent", "value": -0.25 },
+        { "stat": "attack_speed", "mode": "percent", "value": 0.16 }
+      ]
+    },
+    {
+      "id": "item_razor_leech_claws",
+      "name": "Razor Leech Claws",
+      "slot_type": "arms",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "crit_chance", "mode": "flat", "value": 0.14 },
+        { "stat": "mana_gain", "mode": "percent", "value": -0.2 },
+        { "stat": "lifesteal", "mode": "flat", "value": 0.12 },
+        { "stat": "agility", "mode": "percent", "value": -0.15 }
+      ]
+    },
+    {
+      "id": "item_gamblers_hunter_eyes",
+      "name": "Gambler's Hunter Eyes",
+      "slot_type": "eyes",
+      "rarity": "legendary",
+      "modifiers": [
+        { "stat": "agility", "mode": "percent", "value": 0.2 },
+        { "stat": "crit_chance", "mode": "flat", "value": 0.18 },
+        { "stat": "attack_speed", "mode": "percent", "value": -0.1 },
+        { "stat": "lifesteal", "mode": "percent", "value": -0.12 }
+      ]
+    },
+    {
+      "id": "item_mercury_glass_chitin",
+      "name": "Mercury Glass Chitin",
+      "slot_type": "body",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "mana_gain", "mode": "percent", "value": 0.25 },
+        { "stat": "agility", "mode": "percent", "value": -0.12 },
+        { "stat": "attack_speed", "mode": "percent", "value": 0.15 },
+        { "stat": "lifesteal", "mode": "percent", "value": -0.1 }
+      ]
+    },
+    {
+      "id": "item_mercury_thorned_ribcage",
+      "name": "Mercury Thorned Ribcage",
+      "slot_type": "body",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "mana_gain", "mode": "percent", "value": 0.25 },
+        { "stat": "agility", "mode": "percent", "value": -0.12 },
+        { "stat": "lifesteal", "mode": "flat", "value": 0.1 },
+        { "stat": "attack_speed", "mode": "percent", "value": -0.18 }
+      ]
+    },
+    {
+      "id": "item_glass_thorned_ribcage",
+      "name": "Glass Thorned Ribcage",
+      "slot_type": "body",
+      "rarity": "legendary",
+      "modifiers": [
+        { "stat": "attack_speed", "mode": "percent", "value": -0.03 },
+        { "stat": "lifesteal", "mode": "percent", "value": -0.1 },
+        { "stat": "lifesteal", "mode": "flat", "value": 0.1 }
+      ]
+    },
+    {
+      "id": "item_ardent_leech_gland",
+      "name": "Ardent Leech Gland",
+      "slot_type": "heart",
+      "rarity": "epic",
+      "modifiers": [
+        { "stat": "mana_gain", "mode": "percent", "value": 0.3 },
+        { "stat": "attack_speed", "mode": "percent", "value": -0.14 },
+        { "stat": "lifesteal", "mode": "flat", "value": 0.14 },
+        { "stat": "crit_chance", "mode": "flat", "value": -0.08 }
+      ]
+    },
+    {
+      "id": "item_ardent_vampire_heart",
+      "name": "Ardent Vampire Heart",
+      "slot_type": "heart",
+      "rarity": "legendary",
+      "modifiers": [
+        { "stat": "mana_gain", "mode": "percent", "value": 0.3 },
+        { "stat": "attack_speed", "mode": "percent", "value": -0.36 },
+        { "stat": "lifesteal", "mode": "flat", "value": 0.2 },
+        { "stat": "crit_chance", "mode": "flat", "value": 0.05 }
+      ]
+    },
+    {
+      "id": "item_vampire_leech_gland",
+      "name": "Vampire Leech Gland",
+      "slot_type": "heart",
+      "rarity": "legendary",
+      "modifiers": [
+        { "stat": "lifesteal", "mode": "flat", "value": 0.34 },
+        { "stat": "crit_chance", "mode": "flat", "value": -0.03 },
+        { "stat": "attack_speed", "mode": "percent", "value": -0.22 }
+      ]
+    },
+    {
+      "id": "item_timeworn_silent_cortex",
+      "name": "Timeworn Silent Cortex",
+      "slot_type": "brain",
+      "rarity": "legendary",
+      "modifiers": [
+        { "stat": "agility", "mode": "percent", "value": 0.06 },
+        { "stat": "crit_chance", "mode": "flat", "value": -0.06 },
+        { "stat": "mana_gain", "mode": "percent", "value": 0.35 }
+      ]
+    }
+  ],
+  "mergings": [
+    {
+      "item_1": "item_frenzy_tendons",
+      "item_2": "item_moonstep_legs",
+      "result": "item_frenzied_moonstep_tendons"
+    },
+    {
+      "item_1": "item_raven_tendons",
+      "item_2": "item_frenzy_tendons",
+      "result": "item_ravens_frenzy"
+    },
+    {
+      "item_1": "item_raven_tendons",
+      "item_2": "item_moonstep_legs",
+      "result": "item_ravens_moonstep"
+    },
+    {
+      "item_1": "item_razor_claws",
+      "item_2": "item_leech_proboscis",
+      "result": "item_razor_leech_claws"
+    },
+    {
+      "item_1": "item_gamblers_pupil",
+      "item_2": "item_hunter_eyes",
+      "result": "item_gamblers_hunter_eyes"
+    },
+    {
+      "item_1": "item_mercury_hide",
+      "item_2": "item_glass_chitin",
+      "result": "item_mercury_glass_chitin"
+    },
+    {
+      "item_1": "item_mercury_hide",
+      "item_2": "item_thorned_ribcage",
+      "result": "item_mercury_thorned_ribcage"
+    },
+    {
+      "item_1": "item_glass_chitin",
+      "item_2": "item_thorned_ribcage",
+      "result": "item_glass_thorned_ribcage"
+    },
+    {
+      "item_1": "item_ardent_heart",
+      "item_2": "item_leech_gland",
+      "result": "item_ardent_leech_gland"
+    },
+    {
+      "item_1": "item_ardent_heart",
+      "item_2": "item_vampire_heart",
+      "result": "item_ardent_vampire_heart"
+    },
+    {
+      "item_1": "item_vampire_heart",
+      "item_2": "item_leech_gland",
+      "result": "item_vampire_leech_gland"
+    },
+    {
+      "item_1": "item_timeworn_core",
+      "item_2": "item_silent_cortex",
+      "result": "item_timeworn_silent_cortex"
     }
   ]
 }

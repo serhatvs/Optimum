@@ -139,20 +139,15 @@ class MarketView(arcade.View):
         assert item is not None
 
         try:
-            replaced_item = purchase_market_item(
+            purchase_market_item(
                 player=self.human_player,
                 item=item,
-                aux_caps=self.match_state.aux_caps,
             )
         except ValueError:
             self.message = f"Not enough gold for {item.name}."
             return
 
-        replaced_text = ""
-        if replaced_item is not None:
-            replaced_text = f", replacing {replaced_item.name}"
-        self.message = (
-            f"Bought {item.name} for {get_market_price(item)} gold{replaced_text}."
+        self.message = f"Bought {item.name} for {get_market_price(item)} gold and added to inventory."
         )
         self.match_state.history.append(
             f"{self.human_player.name} bought {item.name} for {get_market_price(item)} gold"
@@ -160,9 +155,9 @@ class MarketView(arcade.View):
         self.offers[index] = None
 
     def _continue_to_next_round(self) -> None:
-        from autochess.views.game_view import GameView
+        from autochess.views.build_view import BuildView
 
-        self.window.show_view(GameView(self.match_state))
+        self.window.show_view(BuildView(self.match_state))
 
     def on_draw(self) -> None:
         self.clear((18, 20, 24))

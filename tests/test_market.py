@@ -53,17 +53,12 @@ def test_roll_market_offers_is_deterministic() -> None:
 def test_purchase_market_item_spends_gold_and_equips_data_slot_item() -> None:
     player, aux_caps, items = _build_player()
     item = items["item_glass_chitin"]
-    before = player.character.aux_stats.as_dict()
 
-    replaced_item = purchase_market_item(
+    purchase_market_item(
         player=player,
         item=item,
-        aux_caps=aux_caps,
     )
-    after = player.character.aux_stats.as_dict()
 
-    assert replaced_item is None
     assert player.gold == 40 - get_market_price(item)
-    assert player.character.item_slots["body"] is item
-    assert after["attack_speed"] > before["attack_speed"]
-    assert after["lifesteal"] < before["lifesteal"]
+    assert item in player.character.inventory
+    assert player.character.item_slots["body"] is None

@@ -56,9 +56,10 @@ class BuildView(arcade.View):
         self.expanded_offer_index: int | None = None
         self.pressed_offer_index: int | None = None
         self.press_position: tuple[float, float] | None = None
-        self.message = "Click an item row to open details, then drag it into the matching slot."
-        self.rng = random.Random(match_state.seed + 313)
-        self.offers: list[Item] = roll_build_offers(self.rng, match_state.item_catalog)
+        self.message = "Drag items from your inventory into matching slots."
+        self.offers: list[Item] = []
+        if self.human_player:
+            self.offers = self.human_player.character.inventory
         self.selected_items: dict[str, Item | None] = {
             slot: None for slot in BUILD_SLOT_KEYS
         }
@@ -165,15 +166,15 @@ class BuildView(arcade.View):
         return rects
 
     def _button_rect(self, name: str) -> dict[str, float]:
-        total_width = self.layout["button_width"] * 2 + 24.0
+        total_width = self.layout["button_width"]
         left = (self.window.width - total_width) / 2
-        button_left = left if name == "reroll" else left + self.layout["button_width"] + 24.0
         return {
-            "left": button_left,
-            "right": button_left + self.layout["button_width"],
+            "left": left,
+            "right": left + total_width,
             "bottom": self.layout["footer_y"],
             "top": self.layout["footer_y"] + self.layout["button_height"],
         }
+
 
     def _rect_contains(self, rect: dict[str, float], x: float, y: float) -> bool:
         return rect["left"] <= x <= rect["right"] and rect["bottom"] <= y <= rect["top"]
@@ -189,6 +190,16 @@ class BuildView(arcade.View):
             if self._rect_contains(self._slot_rect(slot), x, y):
                 return slot
         return None
+
+    def _merging_key(self, item_1: Item, item_2: Item) -> tuple[str, str]:
+        return tuple(sorted((item_1.item_id, item_2.item_id)))
+
+    def _merged_item(self, equipped_item: Item, incoming_item: Item) -> Item | None:
+        recipe_key = self._merging_key(equipped_item, incoming_item)
+        result_id = self.match_state.item_mergings.get(recipe_key)
+        if result_id is None:
+            return None
+        return self.match_state.item_catalog.get(result_id)
 
     def _preview_character(self) -> Character | None:
         if not self.human_player:
@@ -691,137 +702,6 @@ class BuildView(arcade.View):
                     self._confirm()
                 return
 
-<<<<<<< Updated upstream
-        for i, cfg in enumerate(self.CORE_SLIDERS):
-            slider = self.sliders[i]
-            arcade.Text(
-                cfg.label,
-                left + self.layout["label_width"],
-                slider.y + 2,
-                arcade.color.WHITE,
-                12,
-                anchor_x="right",
-                anchor_y="center",
-            ).draw()
-            slider.draw(selected=(i == self.selected_index))
-            arcade.Text(
-                self._draw_stat_value(slider.value, cfg),
-                slider.x + slider.width + 18,
-                slider.y + 2,
-                arcade.color.LIGHT_CYAN,
-                12,
-                anchor_x="left",
-                anchor_y="center",
-            ).draw()
-
-        aux_start = len(self.CORE_SLIDERS)
-        col2_left = (
-            left
-            + self.layout["label_width"]
-            + self.layout["slider_width"]
-            + self.layout["col_gap"]
-        )
-
-        arcade.Text(
-            "Auxiliary Stats",
-            col2_left + self.layout["label_width"] / 2,
-            core_y + 36,
-            arcade.color.WHITE,
-            14,
-            anchor_x="center",
-        ).draw()
-
-        for i, cfg in enumerate(self.AUX_SLIDERS):
-            slider = self.sliders[aux_start + i]
-            arcade.Text(
-                cfg.label,
-                col2_left + self.layout["label_width"],
-                slider.y + 2,
-                arcade.color.WHITE,
-                12,
-                anchor_x="right",
-                anchor_y="center",
-            ).draw()
-            slider.draw(selected=(aux_start + i == self.selected_index))
-            arcade.Text(
-                self._draw_stat_value(slider.value, cfg),
-                slider.x + slider.width + 18,
-                slider.y + 2,
-                arcade.color.LIGHT_CYAN,
-                12,
-                anchor_x="left",
-                anchor_y="center",
-            ).draw()
-
-        footer_y = self.layout["margin"] + 40
-
-        btn_width = 100
-        btn_height = 28
-        btn_gap = 20
-
-        random_x = self.window.width / 2 - btn_width - btn_gap / 2
-        confirm_x = self.window.width / 2 + btn_gap / 2
-
-        arcade.draw_lrbt_rectangle_filled(
-            random_x,
-            random_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (50, 56, 64),
-        )
-        arcade.draw_lrbt_rectangle_outline(
-            random_x,
-            random_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (90, 190, 180),
-            1,
-        )
-        arcade.Text(
-            "Random",
-            random_x + btn_width / 2,
-            footer_y + btn_height / 2,
-            arcade.color.WHITE,
-            12,
-            anchor_x="center",
-            anchor_y="center",
-        ).draw()
-
-        arcade.draw_lrbt_rectangle_filled(
-            confirm_x,
-            confirm_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (40, 80, 70),
-        )
-        arcade.draw_lrbt_rectangle_outline(
-            confirm_x,
-            confirm_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            arcade.color.GOLD,
-            1,
-        )
-        arcade.Text(
-            "Confirm",
-            confirm_x + btn_width / 2,
-            footer_y + btn_height / 2,
-            arcade.color.GOLD,
-            12,
-            anchor_x="center",
-            anchor_y="center",
-        ).draw()
-
-        help_y = footer_y - 30
-        arcade.Text(
-            "Controls: Click/drag sliders | Arrow keys adjust selected | Tab select | 1-8 quick select | R randomize | Enter confirm",
-            self.window.width / 2,
-            help_y,
-            arcade.color.GRAY,
-            10,
-            anchor_x="center",
-        ).draw()
-=======
         hit_index = self._inventory_offer_at_position(x, y)
         if hit_index is None:
             return
@@ -844,8 +724,22 @@ class BuildView(arcade.View):
                     f"{self.dragged_item.slot_type.title()} slot."
                 )
             else:
-                self.selected_items[target_slot] = self.dragged_item
-                self.message = f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                equipped_item = self.selected_items.get(target_slot)
+                if equipped_item is None:
+                    self.selected_items[target_slot] = self.dragged_item
+                    self.message = f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                else:
+                    merged_item = self._merged_item(equipped_item, self.dragged_item)
+                    if merged_item is None:
+                        self.message = (
+                            f"No merge recipe for {equipped_item.name} + {self.dragged_item.name}."
+                        )
+                    else:
+                        self.selected_items[target_slot] = merged_item
+                        self.message = (
+                            f"Merged {equipped_item.name} + {self.dragged_item.name} "
+                            f"-> {merged_item.name}."
+                        )
             self.dragged_item = None
             self.drag_origin_index = None
         elif self.pressed_offer_index is not None:
@@ -866,4 +760,3 @@ class BuildView(arcade.View):
             self._reroll()
         elif symbol == arcade.key.ENTER:
             self._confirm()
->>>>>>> Stashed changes

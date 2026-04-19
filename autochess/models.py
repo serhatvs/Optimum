@@ -103,6 +103,7 @@ class Player:
     hp: int = 100
     gold: int = 0
     eliminated: bool = False
+    infinite_health: bool = False
 
 
 @dataclass

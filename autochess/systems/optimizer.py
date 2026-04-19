@@ -1,109 +1,154 @@
 from __future__ import annotations
+
 import json
-from gamspy import Container, Set, Parameter, Variable, Equation, Model, Sum
-from autochess.models import Character, Item, ITEM_SLOTS, AUX_STATS
+from pathlib import Path
+
+try:
+    from gamspy import Container, Set, Parameter, Variable, Equation, Model, Sum
+
+    _GAMSPY_AVAILABLE = True
+except Exception:
+    Container = Set = Parameter = Variable = Equation = Model = Sum = None
+    _GAMSPY_AVAILABLE = False
+
+from autochess.models import Character, Item, ITEM_SLOTS
+
+
+def _load_weights() -> dict[str, float]:
+    balancing_path = Path(__file__).resolve().parents[2] / "data" / "balancing.json"
+    with balancing_path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)["weights"]
+
+
+def _compute_item_score(
+    item: Item,
+    *,
+    base_stats: dict[str, float],
+    weights: dict[str, float],
+) -> float:
+    score = 0.0
+    for mod in item.modifiers:
+        if mod.stat not in weights:
+            continue
+        value = float(mod.value)
+        if mod.mode == "percent":
+            value = base_stats.get(mod.stat, 0.0) * value
+        score += weights[mod.stat] * value
+    return score
+
+
+def _solve_greedy(
+    item_scores: dict[str, float],
+    offer_keys: list[str],
+    key_to_item: dict[str, Item],
+) -> dict[str, Item | None]:
+    recommendation: dict[str, Item | None] = {slot: None for slot in ITEM_SLOTS}
+    for slot in ITEM_SLOTS:
+        candidates = [
+            key
+            for key in offer_keys
+            if key_to_item[key].slot_type == slot and item_scores[key] > 0
+        ]
+        if not candidates:
+            continue
+        best_key = max(candidates, key=lambda key: item_scores[key])
+        recommendation[slot] = key_to_item[best_key]
+    return recommendation
 
 
 def solve_survival_model(
     character: Character, available_items: list[Item]
 ) -> dict[str, Item | None]:
-    # 1. Load weights
-    with open("data/balancing.json", "r") as f:
-        weights = json.load(f)["weights"]
+    if not available_items:
+        return {slot: None for slot in ITEM_SLOTS}
 
-    # 2. Setup GAMS Container
-    m = Container()
+    # 1. Load balancing weights.
+    weights = _load_weights()
 
-    # 3. Define Sets
-    slots = Set(m, name="slots", records=list(ITEM_SLOTS))
-    items = Set(m, name="items", records=[i.item_id for i in available_items])
-    attributes = Set(
-        m, name="attributes", records=list(AUX_STATS) + ["max_hp", "atk", "def_stat"]
-    )
-
-    # 4. Define Parameters
-    # Character Base Stats
+    # 2. Precompute score of each offered item using weighted modifier value.
     base_stats = {
         "max_hp": float(character.core_stats.max_hp),
         "atk": float(character.core_stats.atk),
         "def_stat": float(character.core_stats.def_stat),
         **character.base_aux_stats.as_dict(),
     }
-    char_stats_p = Parameter(
+    offer_keys = [f"{idx}:{item.item_id}" for idx, item in enumerate(available_items)]
+    key_to_item = {
+        f"{idx}:{item.item_id}": item for idx, item in enumerate(available_items)
+    }
+    item_scores = {
+        key: _compute_item_score(key_to_item[key], base_stats=base_stats, weights=weights)
+        for key in offer_keys
+    }
+
+    if not _GAMSPY_AVAILABLE:
+        return _solve_greedy(item_scores, offer_keys, key_to_item)
+
+    # 3. Setup GAMS model.
+    m = Container()
+
+    # 4. Define sets.
+    slots = Set(m, name="slots", records=list(ITEM_SLOTS))
+    offers = Set(m, name="offers", records=offer_keys)
+
+    # 5. Define parameters and variables.
+    item_score = Parameter(
         m,
-        name="char_stats",
-        domain=attributes,
-        records=[(k, v) for k, v in base_stats.items()],
+        name="item_score",
+        domain=offers,
+        records=[(key, score) for key, score in item_scores.items()],
     )
 
-    # Weights
-    weights_p = Parameter(
-        m,
-        name="weights",
-        domain=attributes,
-        records=[(k, v) for k, v in weights.items()],
-    )
-
-    # Item Bonuses (simplified: only flat or percent, based on base stats)
-    # In a full impl, we'd handle complex modifier logic here
-    item_bonus_data = []
-    for item in available_items:
-        for mod in item.modifiers:
-            val = mod.value
-            if mod.mode == "percent":
-                val = base_stats.get(mod.stat, 0.0) * mod.value
-            item_bonus_data.append((item.item_id, mod.stat, val))
-
-    item_bonus_p = Parameter(
-        m, name="item_bonus", domain=[items, attributes], records=item_bonus_data
-    )
-
-    # 5. Define Variables
-    x = Variable(m, name="x", domain=[items, slots], type="binary")
-
-    # 6. Define Objective
-    # Maximize S = sum(a in A, weight(a) * (base(a) + sum(i, s, x(i,s) * bonus(i,a))))
-    # This simplifies to: Maximize sum(i, s, x(i,s) * sum(a, weight(a) * bonus(i,a)))
-
-    # Calculate item efficiency score: sum(a, weight(a) * bonus(i,a))
-    item_efficiency = Sum(
-        attributes, weights_p[attributes] * item_bonus_p[items, attributes]
-    )
-
-    objective = Sum([items, slots], x[items, slots] * item_efficiency[items])
-
-    # 7. Define Constraints
-    slot_limit = Equation(m, name="slot_limit", domain=slots)
-    slot_limit[slots] = Sum(items, x[items, slots]) <= 1
-
-    item_uniqueness = Equation(m, name="item_uniqueness", domain=items)
-    item_uniqueness[items] = Sum(slots, x[items, slots]) <= 1
-
-    # Also restrict item to its slot_type
-    # This requires a parameter mapping item to slot type
     item_slot_map = Parameter(
         m,
         name="item_slot_map",
-        domain=[items, slots],
-        records=[(i.item_id, i.slot_type, 1) for i in available_items],
+        domain=[offers, slots],
+        records=[(key, key_to_item[key].slot_type, 1) for key in offer_keys],
     )
 
-    slot_compatibility = Equation(m, name="slot_compatibility", domain=[items, slots])
-    slot_compatibility[items, slots] = x[items, slots] <= item_slot_map[items, slots]
+    x = Variable(m, name="x", domain=[offers, slots], type="binary")
+    objective = Sum([offers, slots], x[offers, slots] * item_score[offers])
 
-    # 8. Solve
+    # 6. Constraints.
+    slot_limit = Equation(m, name="slot_limit", domain=slots)
+    slot_limit[slots] = Sum(offers, x[offers, slots]) <= 1
+
+    offer_uniqueness = Equation(m, name="offer_uniqueness", domain=offers)
+    offer_uniqueness[offers] = Sum(slots, x[offers, slots]) <= 1
+
+    slot_compatibility = Equation(m, name="slot_compatibility", domain=[offers, slots])
+    slot_compatibility[offers, slots] = x[offers, slots] <= item_slot_map[offers, slots]
+
+    # 7. Solve with GAMSPy and extract assignment from variable levels.
     model = Model(
         m,
         name="survival_model",
-        equations=[slot_limit, item_uniqueness, slot_compatibility],
+        equations=[slot_limit, offer_uniqueness, slot_compatibility],
         problem="MIP",
         sense="MAX",
         objective=objective,
     )
 
-    # NOTE: GAMS solver selection might be needed depending on license
-    # model.solve(solver="CBC")
+    recommendation: dict[str, Item | None] = {slot: None for slot in ITEM_SLOTS}
+    try:
+        model.solve()
+        records = x.records
+        if records is not None:
+            for row in records.to_dict("records"):
+                level = float(row.get("level", 0.0))
+                if level < 0.5:
+                    continue
+                offer_key = str(row.get("offers", ""))
+                slot = str(row.get("slots", ""))
+                item = key_to_item.get(offer_key)
+                if item is None or slot not in recommendation:
+                    continue
+                recommendation[slot] = item
 
-    # Placeholder: assume successful solve and extract x.records
-    # For now, return empty or dummy for testing
-    return {slot: None for slot in ITEM_SLOTS}
+        # If solver returned an empty/infeasible assignment, use deterministic fallback.
+        if any(item is not None for item in recommendation.values()):
+            return recommendation
+    except Exception:
+        pass
+
+    return _solve_greedy(item_scores, offer_keys, key_to_item)

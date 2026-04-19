@@ -6,7 +6,7 @@ from pathlib import Path
 import arcade
 from arcade.types.color import Color
 
-from autochess.models import MatchState
+from autochess.models import MatchState, Environment
 from autochess.systems.arena import (
     CORPSE_FADE_DURATION,
     ArenaSimulation,
@@ -30,6 +30,7 @@ class GameView(arcade.View):
         self.character_texture = self._textures[0] if self._textures else None
         self._assign_textures()
         self.arena: ArenaSimulation | None = None
+        self._backgrounds = self._load_background_textures()
         # Default layout to avoid KeyErrors before on_show_view
         from typing import Any
 
@@ -47,6 +48,15 @@ class GameView(arcade.View):
     def on_show_view(self) -> None:
         self._refresh_layout(self.window.width, self.window.height)
         self._start_round_arena()
+
+    def _load_background_textures(self) -> dict[Environment, arcade.Texture]:
+        backgrounds = {}
+        bg_dir = Path(__file__).resolve().parents[2] / "ui" / "backgrounds"
+        for env in Environment:
+            path = bg_dir / f"{env.name.lower()}.jpg"
+            if path.exists():
+                backgrounds[env] = arcade.load_texture(str(path))
+        return backgrounds
 
     def _start_round_arena(self) -> None:
         # Access nested dicts with type casting for safety
@@ -275,7 +285,9 @@ class GameView(arcade.View):
         bottom: float,
         top: float,
     ) -> None:
-        if player.eliminated:
+        arena_unit = self.arena.units.get(player.player_id) if self.arena else None
+        is_dead = player.eliminated or (arena_unit and not arena_unit.alive)
+        if is_dead:
             fill = (45, 42, 46)
             border = (120, 82, 82)
             title_color = arcade.color.LIGHT_GRAY
@@ -296,9 +308,7 @@ class GameView(arcade.View):
         texture = self._get_player_texture(player)
         if texture:
             tint = (
-                Color(255, 255, 255, 255)
-                if not player.eliminated
-                else Color(120, 120, 120, 190)
+                Color(255, 255, 255, 255) if not is_dead else Color(120, 120, 120, 190)
             )
             arcade.draw_texture_rect(
                 texture,
@@ -408,7 +418,17 @@ class GameView(arcade.View):
             42.0,
             64.0,
         )
-        for player in self.match_state.players:
+        for player in sorted(
+            self.match_state.players,
+            key=lambda p: (
+                -int(not p.eliminated),
+                -(
+                    self.arena.units[p.player_id].bounty
+                    if self.arena and p.player_id in self.arena.units
+                    else p.bounty
+                ),
+            ),
+        ):
             card_bottom = card_top - card_height
             self._draw_player_card(
                 player=player,
@@ -588,13 +608,26 @@ class GameView(arcade.View):
     def _draw_arena(self) -> None:
         if not self.arena:
             return
-        arcade.draw_lrbt_rectangle_filled(
-            self.arena.left,
-            self.arena.right,
-            self.arena.bottom,
-            self.arena.top,
-            (18, 18, 22),
-        )
+        background_texture = self._backgrounds.get(self.arena.environment)
+        if background_texture:
+            arcade.draw_texture_rect(
+                background_texture,
+                arcade.LBWH(
+                    self.arena.left,
+                    self.arena.bottom,
+                    self.arena.right - self.arena.left,
+                    self.arena.top - self.arena.bottom,
+                ),
+                pixelated=True,
+            )
+        else:
+            arcade.draw_lrbt_rectangle_filled(
+                self.arena.left,
+                self.arena.right,
+                self.arena.bottom,
+                self.arena.top,
+                (18, 18, 22),
+            )
         arcade.draw_lrbt_rectangle_outline(
             self.arena.left,
             self.arena.right,
@@ -630,8 +663,13 @@ class GameView(arcade.View):
                 tint = Color(255, 255, 255, 255)
 
             # Find the player for this unit
-            player = next((p for p in self.match_state.players if p.player_id == unit.player_id), None)
-            texture = self._get_player_texture(player) if player else self.character_texture
+            player = next(
+                (p for p in self.match_state.players if p.player_id == unit.player_id),
+                None,
+            )
+            texture = (
+                self._get_player_texture(player) if player else self.character_texture
+            )
 
             if texture:
                 arcade.draw_texture_rect(

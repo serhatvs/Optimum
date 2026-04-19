@@ -31,7 +31,7 @@ def test_recompute_aux_stats_changes_values() -> None:
         Item(
             item_id="item_test_frenzy",
             name="Test Frenzy",
-            slot_type="weapon",
+            slot_type="legs",
             rarity="common",
             modifiers=[
                 Modifier(

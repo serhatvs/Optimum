@@ -5,7 +5,7 @@ from typing import Optional
 
 
 AUX_STATS = ("attack_speed", "agility", "crit_chance", "mana_gain", "lifesteal")
-ITEM_SLOTS = ("weapon", "armor", "trinket_1", "trinket_2", "relic")
+ITEM_SLOTS = ("legs", "arms", "eyes", "body", "heart", "brain")
 
 
 @dataclass(frozen=True)

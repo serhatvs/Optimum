@@ -34,7 +34,6 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         star_level=1,
         forced_archetype="Hybrid",
     )
-    assign_random_items(rng, human_character, items)
     recompute_aux_stats(human_character, generator_cfg.aux_caps)
     players.append(
         Player(

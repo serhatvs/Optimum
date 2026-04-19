@@ -13,6 +13,7 @@ from autochess.systems.arena import (
 from autochess.systems.match import (
     apply_arena_result,
     create_arena_for_round,
+    get_human_player,
     get_winner,
     is_match_over,
     player_was_eliminated,
@@ -189,8 +190,6 @@ class GameView(arcade.View):
     def _player_hp_label(self, player) -> str:
         arena_unit = self._player_arena_unit(player)
         if arena_unit:
-            if player.infinite_health:
-                return "INF"
             return f"{arena_unit.hp}/{arena_unit.max_hp}"
         if player.infinite_health:
             return "INF"
@@ -412,12 +411,20 @@ class GameView(arcade.View):
                 return player.name
         return player_id
 
+    def _has_active_human_player(self) -> bool:
+        human_player = get_human_player(self.match_state)
+        return human_player is not None and not human_player.eliminated
+
     def _status_text(self) -> str:
-        if player_was_eliminated(self.match_state):
-            return "Game over. You were eliminated."
         if get_winner(self.match_state):
             return "Match complete."
+        if player_was_eliminated(self.match_state):
+            if self.arena and self.arena.finished and self.round_committed:
+                return "You are out. Press SPACE to spectate the next round."
+            return "You are out. Spectating the remaining lobby. Press SPACE to skip round."
         if self.arena and self.arena.finished and self.round_committed:
+            if self._has_active_human_player():
+                return "Round complete. Press SPACE for the market."
             return "Round complete. Press SPACE for the next round."
         return "Arena fights automatically. Press SPACE to skip round."
 
@@ -427,14 +434,7 @@ class GameView(arcade.View):
 
         winner = get_winner(self.match_state)
         last_round = self.match_state.round_number - 1
-        if player_was_eliminated(self.match_state):
-            title = "Defeat"
-            if winner and not winner.is_human:
-                subtitle = f"{winner.name} wins the lobby."
-            else:
-                subtitle = f"You were eliminated in round {last_round}."
-            color = Color(235, 98, 76, 255)
-        elif winner:
+        if winner:
             title = "Match Finished"
             subtitle = f"Champion: {winner.name}"
             color = arcade.color.GOLD
@@ -509,16 +509,7 @@ class GameView(arcade.View):
         self._draw_event_log()
 
         winner = get_winner(self.match_state)
-        if player_was_eliminated(self.match_state):
-            arcade.Text(
-                "Defeat",
-                self.window.width / 2,
-                self.layout["footer_heading_y"],
-                Color(235, 98, 76, 255),
-                22,
-                anchor_x="center",
-            ).draw()
-        elif winner:
+        if winner:
             arcade.Text(
                 f"Winner: {winner.name}",
                 self.window.width / 2,
@@ -644,4 +635,9 @@ class GameView(arcade.View):
                 self.last_events = self.last_events[-12:]
                 self.round_committed = True
             if not is_match_over(self.match_state):
-                self._start_round_arena()
+                if self._has_active_human_player():
+                    from autochess.views.market_view import MarketView
+
+                    self.window.show_view(MarketView(self.match_state))
+                else:
+                    self._start_round_arena()

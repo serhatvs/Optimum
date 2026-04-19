@@ -124,7 +124,7 @@ def player_was_eliminated(match: MatchState) -> bool:
 
 
 def is_match_over(match: MatchState) -> bool:
-    return player_was_eliminated(match) or get_winner(match) is not None
+    return get_winner(match) is not None
 
 
 def apply_arena_result(match: MatchState, arena: ArenaSimulation) -> list[str]:

@@ -88,7 +88,6 @@ class ArenaSimulation:
                 crit_chance=character.aux_stats.crit_chance,
                 lifesteal=character.aux_stats.lifesteal,
                 bounty=player.bounty,
-                invulnerable=player.infinite_health,
             )
         return units
 

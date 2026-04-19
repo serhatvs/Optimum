@@ -130,6 +130,8 @@ class MatchState:
     round_number: int
     seed: int
     players: list[Player]
+    item_catalog: dict[str, Item] = field(default_factory=dict)
+    aux_caps: dict[str, dict[str, float]] = field(default_factory=dict)
     history: list[str] = field(default_factory=list)
 
     def active_players(self) -> list[Player]:

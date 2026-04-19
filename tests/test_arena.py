@@ -3,15 +3,21 @@ from __future__ import annotations
 from autochess.models import AuxStats, Character, CoreStats, Player
 from autochess.systems.arena import ArenaSimulation
 
-
-def _build_player(player_id: str, name: str, *, bounty: int = 0) -> Player:
+def _build_player(
+    player_id: str,
+    name: str,
+    *,
+    bounty: int = 0,
+    max_hp: int = 100,
+    infinite_health: bool = False,
+) -> Player:
     character = Character(
         char_id=f"char_{player_id}",
         name=name,
         archetype="Hybrid",
         tier=1,
         star_level=1,
-        core_stats=CoreStats(max_hp=100, atk=20, def_stat=0),
+        core_stats=CoreStats(max_hp=max_hp, atk=20, def_stat=0),
         base_aux_stats=AuxStats(
             attack_speed=1.0,
             agility=0.0,
@@ -33,6 +39,7 @@ def _build_player(player_id: str, name: str, *, bounty: int = 0) -> Player:
         is_human=False,
         character=character,
         bounty=bounty,
+        infinite_health=infinite_health,
     )
 
 
@@ -122,6 +129,34 @@ def test_invulnerable_units_ignore_arena_damage() -> None:
 
     assert "Bravo ignores the damage" in events
     assert bravo.hp == bravo.max_hp
+    assert bravo.alive
+
+
+def test_infinite_health_players_still_take_arena_damage() -> None:
+    arena = ArenaSimulation(
+        players=[
+            _build_player("player_a", "Alpha"),
+            _build_player("player_b", "Bravo", infinite_health=True),
+        ],
+        seed=7,
+        left=0,
+        right=200,
+        bottom=0,
+        top=200,
+    )
+
+    alpha = arena.units["player_a"]
+    bravo = arena.units["player_b"]
+    alpha.atk = 30
+    alpha.x = 50.0
+    alpha.y = 50.0
+    bravo.x = 84.0
+    bravo.y = 50.0
+
+    events = arena.step(0.05)
+
+    assert any("hits Bravo" in event for event in events)
+    assert bravo.hp < bravo.max_hp
     assert bravo.alive
 
 

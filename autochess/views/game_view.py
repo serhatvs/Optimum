@@ -275,7 +275,9 @@ class GameView(arcade.View):
         bottom: float,
         top: float,
     ) -> None:
-        if player.eliminated:
+        arena_unit = self.arena.units.get(player.player_id) if self.arena else None
+        is_dead = player.eliminated or (arena_unit and not arena_unit.alive)
+        if is_dead:
             fill = (45, 42, 46)
             border = (120, 82, 82)
             title_color = arcade.color.LIGHT_GRAY
@@ -297,7 +299,7 @@ class GameView(arcade.View):
         if texture:
             tint = (
                 Color(255, 255, 255, 255)
-                if not player.eliminated
+                if not is_dead
                 else Color(120, 120, 120, 190)
             )
             arcade.draw_texture_rect(
@@ -408,7 +410,13 @@ class GameView(arcade.View):
             42.0,
             64.0,
         )
-        for player in self.match_state.players:
+        for player in sorted(
+            self.match_state.players,
+            key=lambda p: (
+                -int(not p.eliminated),
+                - (self.arena.units[p.player_id].bounty if self.arena and p.player_id in self.arena.units else p.bounty)
+            )
+        ):
             card_bottom = card_top - card_height
             self._draw_player_card(
                 player=player,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from autochess.models import AuxStats, CoreStats
 from autochess.systems.loader import load_json
 from autochess.systems.shop import PlayerInventory, StatCalculator, parse_shop_items
@@ -66,3 +68,11 @@ def test_stat_calculator_scales_modifiers_by_item_level() -> None:
 
     assert round(computed.aux_stats.attack_speed, 2) == 1.44
     assert round(computed.aux_stats.lifesteal, 2) == 0.04
+
+
+def test_parse_shop_items_rejects_invalid_slot_type() -> None:
+    raw = load_json("data/items.json")
+    raw["items"][0]["slot_type"] = "feet"
+
+    with pytest.raises(ValueError, match="slot_type has invalid value"):
+        parse_shop_items(raw)

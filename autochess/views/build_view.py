@@ -56,7 +56,9 @@ class BuildView(arcade.View):
         self.expanded_offer_index: int | None = None
         self.pressed_offer_index: int | None = None
         self.press_position: tuple[float, float] | None = None
-        self.message = "Click an item row to open details, then drag it into the matching slot."
+        self.message = (
+            "Click an item row to open details, then drag it into the matching slot."
+        )
         self.rng = random.Random(match_state.seed + 313)
         self.offers: list[Item] = roll_build_offers(self.rng, match_state.item_catalog)
         self.selected_items: dict[str, Item | None] = {
@@ -167,7 +169,9 @@ class BuildView(arcade.View):
     def _button_rect(self, name: str) -> dict[str, float]:
         total_width = self.layout["button_width"] * 2 + 24.0
         left = (self.window.width - total_width) / 2
-        button_left = left if name == "reroll" else left + self.layout["button_width"] + 24.0
+        button_left = (
+            left if name == "reroll" else left + self.layout["button_width"] + 24.0
+        )
         return {
             "left": button_left,
             "right": button_left + self.layout["button_width"],
@@ -214,7 +218,9 @@ class BuildView(arcade.View):
             selected_items=self.selected_items,
             aux_caps=self.match_state.aux_caps,
         )
-        self.human_player.character.current_hp = self.human_player.character.core_stats.max_hp
+        self.human_player.character.current_hp = (
+            self.human_player.character.core_stats.max_hp
+        )
         self.window.show_view(GameView(self.match_state))
 
     def _modifier_label(self, modifier: Modifier) -> str:
@@ -321,7 +327,9 @@ class BuildView(arcade.View):
         ).draw()
 
         for slot in BUILD_SLOT_KEYS:
-            self._draw_slot_item(slot, self._slot_rect(slot), self.selected_items.get(slot))
+            self._draw_slot_item(
+                slot, self._slot_rect(slot), self.selected_items.get(slot)
+            )
 
     def _draw_preview_stats(self) -> None:
         rect = {
@@ -572,7 +580,9 @@ class BuildView(arcade.View):
             "top": self.drag_position[1] + 22.0,
             "bottom": self.drag_position[1] - 22.0,
         }
-        border_color = SLOT_COLORS.get(self.dragged_item.slot_type, arcade.color.LIGHT_GRAY)
+        border_color = SLOT_COLORS.get(
+            self.dragged_item.slot_type, arcade.color.LIGHT_GRAY
+        )
         arcade.draw_lrbt_rectangle_filled(
             rect["left"],
             rect["right"],
@@ -664,8 +674,15 @@ class BuildView(arcade.View):
         buttons: int,
         modifiers: int,
     ) -> None:
-        if self.dragged_item is None and self.pressed_offer_index is not None and self.press_position:
-            if abs(x - self.press_position[0]) + abs(y - self.press_position[1]) >= DRAG_THRESHOLD:
+        if (
+            self.dragged_item is None
+            and self.pressed_offer_index is not None
+            and self.press_position
+        ):
+            if (
+                abs(x - self.press_position[0]) + abs(y - self.press_position[1])
+                >= DRAG_THRESHOLD
+            ):
                 self.drag_origin_index = self.pressed_offer_index
                 self.dragged_item = self.offers[self.pressed_offer_index]
 
@@ -691,137 +708,6 @@ class BuildView(arcade.View):
                     self._confirm()
                 return
 
-<<<<<<< Updated upstream
-        for i, cfg in enumerate(self.CORE_SLIDERS):
-            slider = self.sliders[i]
-            arcade.Text(
-                cfg.label,
-                left + self.layout["label_width"],
-                slider.y + 2,
-                arcade.color.WHITE,
-                12,
-                anchor_x="right",
-                anchor_y="center",
-            ).draw()
-            slider.draw(selected=(i == self.selected_index))
-            arcade.Text(
-                self._draw_stat_value(slider.value, cfg),
-                slider.x + slider.width + 18,
-                slider.y + 2,
-                arcade.color.LIGHT_CYAN,
-                12,
-                anchor_x="left",
-                anchor_y="center",
-            ).draw()
-
-        aux_start = len(self.CORE_SLIDERS)
-        col2_left = (
-            left
-            + self.layout["label_width"]
-            + self.layout["slider_width"]
-            + self.layout["col_gap"]
-        )
-
-        arcade.Text(
-            "Auxiliary Stats",
-            col2_left + self.layout["label_width"] / 2,
-            core_y + 36,
-            arcade.color.WHITE,
-            14,
-            anchor_x="center",
-        ).draw()
-
-        for i, cfg in enumerate(self.AUX_SLIDERS):
-            slider = self.sliders[aux_start + i]
-            arcade.Text(
-                cfg.label,
-                col2_left + self.layout["label_width"],
-                slider.y + 2,
-                arcade.color.WHITE,
-                12,
-                anchor_x="right",
-                anchor_y="center",
-            ).draw()
-            slider.draw(selected=(aux_start + i == self.selected_index))
-            arcade.Text(
-                self._draw_stat_value(slider.value, cfg),
-                slider.x + slider.width + 18,
-                slider.y + 2,
-                arcade.color.LIGHT_CYAN,
-                12,
-                anchor_x="left",
-                anchor_y="center",
-            ).draw()
-
-        footer_y = self.layout["margin"] + 40
-
-        btn_width = 100
-        btn_height = 28
-        btn_gap = 20
-
-        random_x = self.window.width / 2 - btn_width - btn_gap / 2
-        confirm_x = self.window.width / 2 + btn_gap / 2
-
-        arcade.draw_lrbt_rectangle_filled(
-            random_x,
-            random_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (50, 56, 64),
-        )
-        arcade.draw_lrbt_rectangle_outline(
-            random_x,
-            random_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (90, 190, 180),
-            1,
-        )
-        arcade.Text(
-            "Random",
-            random_x + btn_width / 2,
-            footer_y + btn_height / 2,
-            arcade.color.WHITE,
-            12,
-            anchor_x="center",
-            anchor_y="center",
-        ).draw()
-
-        arcade.draw_lrbt_rectangle_filled(
-            confirm_x,
-            confirm_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            (40, 80, 70),
-        )
-        arcade.draw_lrbt_rectangle_outline(
-            confirm_x,
-            confirm_x + btn_width,
-            footer_y,
-            footer_y + btn_height,
-            arcade.color.GOLD,
-            1,
-        )
-        arcade.Text(
-            "Confirm",
-            confirm_x + btn_width / 2,
-            footer_y + btn_height / 2,
-            arcade.color.GOLD,
-            12,
-            anchor_x="center",
-            anchor_y="center",
-        ).draw()
-
-        help_y = footer_y - 30
-        arcade.Text(
-            "Controls: Click/drag sliders | Arrow keys adjust selected | Tab select | 1-8 quick select | R randomize | Enter confirm",
-            self.window.width / 2,
-            help_y,
-            arcade.color.GRAY,
-            10,
-            anchor_x="center",
-        ).draw()
-=======
         hit_index = self._inventory_offer_at_position(x, y)
         if hit_index is None:
             return
@@ -845,7 +731,9 @@ class BuildView(arcade.View):
                 )
             else:
                 self.selected_items[target_slot] = self.dragged_item
-                self.message = f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                self.message = (
+                    f"{self.dragged_item.name} equipped to {target_slot.title()}."
+                )
             self.dragged_item = None
             self.drag_origin_index = None
         elif self.pressed_offer_index is not None:
@@ -866,4 +754,3 @@ class BuildView(arcade.View):
             self._reroll()
         elif symbol == arcade.key.ENTER:
             self._confirm()
->>>>>>> Stashed changes

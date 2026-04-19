@@ -6,7 +6,7 @@ from pathlib import Path
 import arcade
 from arcade.types.color import Color
 
-from autochess.models import MatchState
+from autochess.models import MatchState, Environment
 from autochess.systems.arena import (
     CORPSE_FADE_DURATION,
     ArenaSimulation,
@@ -30,6 +30,7 @@ class GameView(arcade.View):
         self.character_texture = self._textures[0] if self._textures else None
         self._assign_textures()
         self.arena: ArenaSimulation | None = None
+        self._backgrounds = self._load_background_textures()
         # Default layout to avoid KeyErrors before on_show_view
         from typing import Any
 
@@ -63,6 +64,15 @@ class GameView(arcade.View):
         )
         self.round_committed = False
         self.last_events = [f"Round {self.match_state.round_number} started"]
+
+    def _load_background_textures(self) -> dict[Environment, arcade.Texture]:
+        backgrounds = {}
+        bg_dir = Path(__file__).resolve().parents[2] / "ui" / "backgrounds"
+        for env in Environment:
+            path = bg_dir / f"{env.name.lower()}.jpg"
+            if path.exists():
+                backgrounds[env] = arcade.load_texture(str(path))
+        return backgrounds
 
     def _load_character_textures(self) -> list[arcade.Texture]:
         atlas_path = Path(__file__).resolve().parents[2] / "player_atlas.png"
@@ -588,13 +598,26 @@ class GameView(arcade.View):
     def _draw_arena(self) -> None:
         if not self.arena:
             return
-        arcade.draw_lrbt_rectangle_filled(
-            self.arena.left,
-            self.arena.right,
-            self.arena.bottom,
-            self.arena.top,
-            (18, 18, 22),
-        )
+        background_texture = self._backgrounds.get(self.arena.environment)
+        if background_texture:
+            arcade.draw_texture_rect(
+                background_texture,
+                arcade.LBWH(
+                    self.arena.left,
+                    self.arena.bottom,
+                    self.arena.right - self.arena.left,
+                    self.arena.top - self.arena.bottom,
+                ),
+                pixelated=True,
+            )
+        else:
+            arcade.draw_lrbt_rectangle_filled(
+                self.arena.left,
+                self.arena.right,
+                self.arena.bottom,
+                self.arena.top,
+                (18, 18, 22),
+            )
         arcade.draw_lrbt_rectangle_outline(
             self.arena.left,
             self.arena.right,
@@ -630,8 +653,13 @@ class GameView(arcade.View):
                 tint = Color(255, 255, 255, 255)
 
             # Find the player for this unit
-            player = next((p for p in self.match_state.players if p.player_id == unit.player_id), None)
-            texture = self._get_player_texture(player) if player else self.character_texture
+            player = next(
+                (p for p in self.match_state.players if p.player_id == unit.player_id),
+                None,
+            )
+            texture = (
+                self._get_player_texture(player) if player else self.character_texture
+            )
 
             if texture:
                 arcade.draw_texture_rect(

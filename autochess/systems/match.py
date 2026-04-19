@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 
-from autochess.models import KillEvent, MatchState, Player
+from autochess.models import KillEvent, MatchState, Player, Environment
 from autochess.systems.arena import ArenaSimulation
 from autochess.systems.bounty import (
     apply_bounty_death_penalty,
@@ -164,6 +164,8 @@ def create_arena_for_round(
     bottom: float,
     top: float,
 ) -> ArenaSimulation:
+    rng = random.Random(match.seed + match.round_number * 1409)
+    environment = rng.choice(list(Environment))
     return ArenaSimulation(
         players=match.active_players(),
         seed=match.seed + match.round_number * 1409,
@@ -171,4 +173,5 @@ def create_arena_for_round(
         right=right,
         bottom=bottom,
         top=top,
+        environment=environment,
     )

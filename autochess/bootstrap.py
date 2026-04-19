@@ -35,14 +35,11 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         star_level=1,
         forced_archetype="Hybrid",
     )
-<<<<<<< Updated upstream
-=======
     starter_body_item = draw_random_item_for_slot(
         rng,
         items,
         slot_type="body",
     )
->>>>>>> Stashed changes
     recompute_aux_stats(human_character, generator_cfg.aux_caps)
     players.append(
         Player(

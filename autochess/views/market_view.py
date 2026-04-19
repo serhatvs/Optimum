@@ -146,13 +146,11 @@ class MarketView(arcade.View):
         except ValueError:
             self.message = f"Not enough gold for {item.name}."
             return
-
-        self.message = f"Bought {item.name} for {get_market_price(item)} gold and added to inventory."
-        )
-        self.match_state.history.append(
-            f"{self.human_player.name} bought {item.name} for {get_market_price(item)} gold"
-        )
-        self.offers[index] = None
+self.message = f"Bought {item.name} for {get_market_price(item)} gold and added to inventory."
+self.match_state.history.append(
+    f"{self.human_player.name} bought {item.name} for {get_market_price(item)} gold"
+)
+self.offers[index] = None
 
     def _continue_to_next_round(self) -> None:
         from autochess.views.build_view import BuildView

@@ -1,7 +1,9 @@
 from __future__ import annotations
+import uuid
 
 from dataclasses import dataclass, field
 from typing import Optional
+
 
 
 AUX_STATS = ("attack_speed", "agility", "crit_chance", "mana_gain", "lifesteal")
@@ -25,6 +27,7 @@ class Item:
     rarity: str
     modifiers: list[Modifier]
     unique: bool = False
+    unique_instance_id: uuid.UUID = field(default_factory=uuid.uuid4)
 
 
 @dataclass

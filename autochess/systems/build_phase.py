@@ -57,8 +57,8 @@ def apply_build_selection_to_character(
         for slot in BUILD_SLOT_KEYS
     }
     
-    # Remove newly equipped items from inventory
-    equipped_ids = {item.item_id for item in character.item_slots.values() if item}
-    character.inventory = [item for item in character.inventory if item.item_id not in equipped_ids]
+    # Remove newly equipped items from inventory by unique instance id
+    equipped_instance_ids = {item.unique_instance_id for item in character.item_slots.values() if item}
+    character.inventory = [item for item in character.inventory if item.unique_instance_id not in equipped_instance_ids]
     
     recompute_aux_stats(character, aux_caps)

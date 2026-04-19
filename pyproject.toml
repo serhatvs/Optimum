@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pixel-ffa-autochess"
 version = "0.1.0"
 description = "Deterministic pixel-art FFA auto-chess prototype with Arcade.py"
-readme = "AGENTS.md"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "arcade>=2.6.17",

@@ -13,8 +13,9 @@ from autochess.systems.bounty import (
 ATTACK_RANGE = 34.0
 RANGE_EPSILON = 1e-6
 CORPSE_FADE_DURATION = 3.0
-AGGRO_DISTANCE_WEIGHT = 0.90
+AGGRO_DISTANCE_WEIGHT = 0.80
 AGGRO_BOUNTY_WEIGHT = 0.10
+AGGRO_HP_WEIGHT = 0.10
 AGGRO_SWITCH_THRESHOLD = 0.15
 
 
@@ -104,13 +105,16 @@ class ArenaSimulation:
         candidate: ArenaUnit,
         *,
         highest_bounty: int,
+        highest_hp: int,
     ) -> tuple[float, float]:
         distance = math.hypot(candidate.x - source.x, candidate.y - source.y)
         distance_score = 1.0 - min(1.0, distance / self._arena_diagonal())
         bounty_score = candidate.bounty / max(1, highest_bounty)
+        hp_score = 1.0 - (candidate.hp / max(1, highest_hp))
         total_score = (
             AGGRO_DISTANCE_WEIGHT * distance_score
             + AGGRO_BOUNTY_WEIGHT * bounty_score
+            + AGGRO_HP_WEIGHT * hp_score
         )
         return total_score, distance
 
@@ -231,12 +235,14 @@ class ArenaSimulation:
             return None
 
         highest_bounty = max(unit.bounty for unit in candidates)
+        highest_hp = max(unit.hp for unit in candidates)
         scored_candidates: list[tuple[ArenaUnit, float, float]] = []
         for candidate in candidates:
             score, distance = self._target_score(
                 source,
                 candidate,
                 highest_bounty=highest_bounty,
+                highest_hp=highest_hp,
             )
             scored_candidates.append((candidate, score, distance))
 
@@ -256,6 +262,7 @@ class ArenaSimulation:
                 source,
                 current_target,
                 highest_bounty=highest_bounty,
+                highest_hp=highest_hp,
             )
             if (
                 current_target.player_id == best_candidate.player_id

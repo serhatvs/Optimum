@@ -3,13 +3,13 @@ from __future__ import annotations
 from autochess.models import AuxStats, Character, CoreStats, Player
 from autochess.systems.arena import ArenaSimulation
 
+
 def _build_player(
     player_id: str,
     name: str,
     *,
     bounty: int = 0,
     max_hp: int = 100,
-    infinite_health: bool = False,
 ) -> Player:
     character = Character(
         char_id=f"char_{player_id}",
@@ -246,6 +246,37 @@ def test_weighted_aggro_can_prefer_farther_high_bounty_target() -> None:
     target = arena._pick_target(alpha)
 
     assert target is charlie
+
+
+def test_weighted_aggro_prefers_lower_absolute_hp_not_lower_percentage() -> None:
+    arena = ArenaSimulation(
+        players=[
+            _build_player("player_a", "Alpha"),
+            _build_player("player_b", "Bravo", bounty=3, max_hp=100),
+            _build_player("player_c", "Charlie", bounty=3, max_hp=200),
+        ],
+        seed=7,
+        left=0,
+        right=200,
+        bottom=0,
+        top=200,
+    )
+
+    alpha = arena.units["player_a"]
+    bravo = arena.units["player_b"]
+    charlie = arena.units["player_c"]
+    alpha.x = 50.0
+    alpha.y = 50.0
+    bravo.x = 90.0
+    bravo.y = 50.0
+    charlie.x = 50.0
+    charlie.y = 90.0
+    bravo.hp = 70
+    charlie.hp = 80
+
+    target = arena._pick_target(alpha)
+
+    assert target is bravo
 
 
 def test_sticky_aggro_keeps_current_target_for_small_score_gap() -> None:

@@ -43,11 +43,12 @@ class MenuView(arcade.View):
 
     def _button_at_position(self, x: float, y: float) -> int | None:
         for button in self._button_layout():
-            if (
-                button["left"] <= x <= button["right"]
-                and button["bottom"] <= y <= button["top"]
-            ):
-                return int(button["index"])
+            b_left = float(button["left"])  # type: ignore
+            b_right = float(button["right"])  # type: ignore
+            b_bottom = float(button["bottom"])  # type: ignore
+            b_top = float(button["top"])  # type: ignore
+            if b_left <= x <= b_right and b_bottom <= y <= b_top:
+                return int(button["index"])  # type: ignore
         return None
 
     def _start_game(self) -> None:
@@ -123,18 +124,23 @@ class MenuView(arcade.View):
                 border = Color(90, 96, 110, 255)
                 text_color = arcade.color.LIGHT_GRAY
 
+            b_left = float(button["left"])  # type: ignore
+            b_right = float(button["right"])  # type: ignore
+            b_bottom = float(button["bottom"])  # type: ignore
+            b_top = float(button["top"])  # type: ignore
+
             arcade.draw_lrbt_rectangle_filled(
-                button["left"],
-                button["right"],
-                button["bottom"],
-                button["top"],
+                b_left,
+                b_right,
+                b_bottom,
+                b_top,
                 fill,
             )
             arcade.draw_lrbt_rectangle_outline(
-                button["left"],
-                button["right"],
-                button["bottom"],
-                button["top"],
+                b_left,
+                b_right,
+                b_bottom,
+                b_top,
                 border,
                 2,
             )
@@ -147,7 +153,9 @@ class MenuView(arcade.View):
                 anchor_x="center",
             ).draw()
 
-        footer_text = self.options_message or "Use mouse or arrow keys, then press ENTER."
+        footer_text = (
+            self.options_message or "Use mouse or arrow keys, then press ENTER."
+        )
         arcade.Text(
             footer_text,
             self.window.width / 2,
@@ -174,9 +182,7 @@ class MenuView(arcade.View):
         if self.hovered_index is not None:
             self.selected_index = self.hovered_index
 
-    def on_mouse_press(
-        self, x: int, y: int, button: int, modifiers: int
-    ) -> None:
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> None:
         if button != arcade.MOUSE_BUTTON_LEFT:
             return
         target_index = self._button_at_position(x, y)

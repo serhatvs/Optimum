@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
 
 import arcade
@@ -25,9 +26,22 @@ class GameView(arcade.View):
         super().__init__()
         self.match_state = match_state
         self.last_events: list[str] = []
-        self.character_texture = self._load_character_texture()
+        self._textures = self._load_character_textures()
+        self.character_texture = self._textures[0] if self._textures else None
+        self._assign_textures()
         self.arena: ArenaSimulation | None = None
-        self.layout: dict[str, dict[str, float] | float] = {}
+        # Default layout to avoid KeyErrors before on_show_view
+        from typing import Any
+
+        self.layout: dict[str, Any] = {
+            "margin": 10.0,
+            "title_y": 700.0,
+            "footer_y": 20.0,
+            "footer_heading_y": 40.0,
+            "sidebar": {"left": 0.0, "right": 0.0, "bottom": 0.0, "top": 0.0},
+            "arena": {"left": 0.0, "right": 0.0, "bottom": 0.0, "top": 0.0},
+            "event_log": {"left": 0.0, "right": 0.0, "bottom": 0.0, "top": 0.0},
+        }
         self.round_committed = False
 
     def on_show_view(self) -> None:
@@ -35,7 +49,11 @@ class GameView(arcade.View):
         self._start_round_arena()
 
     def _start_round_arena(self) -> None:
-        arena_frame = self.layout["arena"]
+        # Access nested dicts with type casting for safety
+        def get_frame(key: str) -> dict[str, float]:
+            return self.layout[key]  # type: ignore
+
+        arena_frame = get_frame("arena")
         self.arena = create_arena_for_round(
             self.match_state,
             left=arena_frame["left"],
@@ -46,11 +64,35 @@ class GameView(arcade.View):
         self.round_committed = False
         self.last_events = [f"Round {self.match_state.round_number} started"]
 
+    def _load_character_textures(self) -> list[arcade.Texture]:
+        atlas_path = Path(__file__).resolve().parents[2] / "player_atlas.png"
+        textures = []
+        if atlas_path.exists():
+            for y in range(0, 128, 32):
+                for x in range(0, 128, 32):
+                    textures.append(
+                        arcade.load_texture(
+                            str(atlas_path),
+                        ).crop(x, y, 32, 32)
+                    )
+        return textures
+
+    def _assign_textures(self) -> None:
+        if not self._textures:
+            return
+
+        rng = random.Random(self.match_state.seed)
+        for player in self.match_state.players:
+            player.character.texture_index = rng.randrange(len(self._textures))
+
+    def _get_player_texture(self, player) -> arcade.Texture | None:
+        idx = getattr(player.character, "texture_index", 0)
+        if idx < len(self._textures):
+            return self._textures[idx]
+        return self.character_texture
+
     def _load_character_texture(self) -> arcade.Texture | None:
-        texture_path = Path(__file__).resolve().parents[2] / "player.png"
-        if texture_path.exists():
-            return arcade.load_texture(str(texture_path))
-        return None
+        return self.character_texture  # Kept for compatibility if used elsewhere
 
     def _clamp(self, value: float, minimum: float, maximum: float) -> float:
         return max(minimum, min(maximum, value))
@@ -134,8 +176,12 @@ class GameView(arcade.View):
             y_ratio = (unit.y - old_arena_frame["bottom"]) / old_height
             unit.x = new_arena_frame["left"] + (x_ratio * new_width)
             unit.y = new_arena_frame["bottom"] + (y_ratio * new_height)
-            unit.x = min(new_arena_frame["right"] - 16, max(new_arena_frame["left"] + 16, unit.x))
-            unit.y = min(new_arena_frame["top"] - 16, max(new_arena_frame["bottom"] + 16, unit.y))
+            unit.x = min(
+                new_arena_frame["right"] - 16, max(new_arena_frame["left"] + 16, unit.x)
+            )
+            unit.y = min(
+                new_arena_frame["top"] - 16, max(new_arena_frame["bottom"] + 16, unit.y)
+            )
 
         self.arena.left = new_arena_frame["left"]
         self.arena.right = new_arena_frame["right"]
@@ -247,14 +293,15 @@ class GameView(arcade.View):
 
         icon_left = left + 8
         icon_bottom = bottom + 10
-        if self.character_texture:
+        texture = self._get_player_texture(player)
+        if texture:
             tint = (
                 Color(255, 255, 255, 255)
                 if not player.eliminated
                 else Color(120, 120, 120, 190)
             )
             arcade.draw_texture_rect(
-                self.character_texture,
+                texture,
                 arcade.LBWH(icon_left, icon_bottom, 28, 28),
                 color=tint,
                 pixelated=True,
@@ -320,7 +367,11 @@ class GameView(arcade.View):
         )
 
     def _draw_sidebar(self) -> None:
-        panel_frame = self.layout["sidebar"]
+        # Access nested dicts with type casting for safety
+        def get_frame(key: str) -> dict[str, float]:
+            return self.layout[key]  # type: ignore
+
+        panel_frame = get_frame("sidebar")
         panel_left = panel_frame["left"]
         panel_right = panel_frame["right"]
         panel_bottom = panel_frame["bottom"]
@@ -369,7 +420,11 @@ class GameView(arcade.View):
             card_top = card_bottom - card_gap
 
     def _draw_event_log(self) -> None:
-        log_frame = self.layout["event_log"]
+        # Access nested dicts with type casting for safety
+        def get_frame(key: str) -> dict[str, float]:
+            return self.layout[key]  # type: ignore
+
+        log_frame = get_frame("event_log")
         left = log_frame["left"]
         right = log_frame["right"]
         bottom = log_frame["bottom"]
@@ -574,9 +629,13 @@ class GameView(arcade.View):
             else:
                 tint = Color(255, 255, 255, 255)
 
-            if self.character_texture:
+            # Find the player for this unit
+            player = next((p for p in self.match_state.players if p.player_id == unit.player_id), None)
+            texture = self._get_player_texture(player) if player else self.character_texture
+
+            if texture:
                 arcade.draw_texture_rect(
-                    self.character_texture,
+                    texture,
                     arcade.LBWH(unit.x - 16, unit.y - 16, 32, 32),
                     color=tint,
                     pixelated=True,

@@ -6,6 +6,7 @@ from pathlib import Path
 from autochess.models import MatchState, Player
 from autochess.systems.generator import (
     assign_random_items,
+    draw_random_item_for_slot,
     generate_character,
     parse_generator_config,
     parse_items,
@@ -34,6 +35,14 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         star_level=1,
         forced_archetype="Hybrid",
     )
+<<<<<<< Updated upstream
+=======
+    starter_body_item = draw_random_item_for_slot(
+        rng,
+        items,
+        slot_type="body",
+    )
+>>>>>>> Stashed changes
     recompute_aux_stats(human_character, generator_cfg.aux_caps)
     players.append(
         Player(
@@ -43,6 +52,7 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
             character=human_character,
             gold=STARTING_GOLD,
             infinite_health=True,
+            inventory=[starter_body_item] if starter_body_item else [],
         )
     )
 

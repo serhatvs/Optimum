@@ -105,6 +105,7 @@ class Player:
     bounty: int = 0
     eliminated: bool = False
     infinite_health: bool = False
+    inventory: list[Item] = field(default_factory=list)
 
 
 @dataclass

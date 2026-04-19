@@ -328,6 +328,27 @@ class BuildView(arcade.View):
             anchor_x="center",
         ).draw()
 
+        arcade.Text(
+            "Customize your character",
+            self.window.width / 2,
+            self.layout["title_y"] - 10,
+            arcade.color.LIGHT_GRAY,
+            14,
+            anchor_x="center",
+        ).draw()
+
+        left = self.layout["content_left"]
+        core_y = self.layout["title_y"] - 75
+
+        arcade.Text(
+            "Core Stats",
+            left + self.layout["label_width"] / 2,
+            core_y + 36,
+            arcade.color.WHITE,
+            14,
+            anchor_x="center",
+        ).draw()
+
         for i, cfg in enumerate(self.CORE_SLIDERS):
             slider = self.sliders[i]
             arcade.Text(
@@ -338,6 +359,7 @@ class BuildView(arcade.View):
                 12,
                 anchor_x="right",
                 anchor_y="center",
+
             ).draw()
             slider.draw(selected=(i == self.selected_index))
             arcade.Text(
@@ -348,6 +370,7 @@ class BuildView(arcade.View):
                 12,
                 anchor_x="left",
                 anchor_y="center",
+
             ).draw()
 
         aux_start = len(self.CORE_SLIDERS)
@@ -377,6 +400,7 @@ class BuildView(arcade.View):
                 12,
                 anchor_x="right",
                 anchor_y="center",
+
             ).draw()
             slider.draw(selected=(aux_start + i == self.selected_index))
             arcade.Text(
@@ -387,6 +411,7 @@ class BuildView(arcade.View):
                 12,
                 anchor_x="left",
                 anchor_y="center",
+
             ).draw()
 
         footer_y = self.layout["margin"] + 40

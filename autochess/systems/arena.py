@@ -4,7 +4,7 @@ import math
 import random
 from dataclasses import dataclass
 
-from autochess.models import KillEvent, Player
+from autochess.models import KillEvent, Player, Environment
 from autochess.systems.bounty import (
     apply_bounty_death_penalty,
     build_kill_event,
@@ -51,8 +51,10 @@ class ArenaSimulation:
         right: float,
         bottom: float,
         top: float,
+        environment: Environment,
     ) -> None:
         self.rng = random.Random(seed)
+        self.environment = environment
         self.left = left
         self.right = right
         self.bottom = bottom
@@ -256,7 +258,11 @@ class ArenaSimulation:
         )
 
         current_target = self.units.get(source.target_id) if source.target_id else None
-        if current_target and current_target.alive and current_target.player_id != source.player_id:
+        if (
+            current_target
+            and current_target.alive
+            and current_target.player_id != source.player_id
+        ):
             current_score, _ = self._target_score(
                 source,
                 current_target,

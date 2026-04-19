@@ -35,14 +35,13 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
         star_level=1,
         forced_archetype="Hybrid",
     )
-<<<<<<< Updated upstream
-=======
     starter_body_item = draw_random_item_for_slot(
         rng,
         items,
         slot_type="body",
     )
->>>>>>> Stashed changes
+    if starter_body_item is None:
+        raise ValueError("items catalog must contain at least one body item")
     recompute_aux_stats(human_character, generator_cfg.aux_caps)
     players.append(
         Player(
@@ -52,7 +51,7 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
             character=human_character,
             gold=STARTING_GOLD,
             infinite_health=True,
-            inventory=[starter_body_item] if starter_body_item else [],
+            inventory=[starter_body_item],
         )
     )
 

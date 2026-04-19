@@ -10,6 +10,7 @@ def _build_player(
     *,
     bounty: int = 0,
     max_hp: int = 100,
+    infinite_health: bool = False,
 ) -> Player:
     character = Character(
         char_id=f"char_{player_id}",
@@ -337,3 +338,4 @@ def test_sticky_aggro_switches_for_much_better_target() -> None:
     target = arena._pick_target(alpha)
 
     assert target is charlie
+

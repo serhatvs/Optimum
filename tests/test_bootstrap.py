@@ -10,7 +10,9 @@ def test_build_match_gives_human_one_random_body_item() -> None:
 
     human = next(player for player in match.players if player.is_human)
     equipped = human.character.equipped_items()
+    inventory = human.inventory
 
-    assert len(equipped) == 1
-    assert equipped[0].slot_type == "body"
-    assert human.character.item_slots["body"] is equipped[0]
+    assert len(inventory) == 1
+    assert inventory[0].slot_type == "body"
+    assert len(equipped) == 0
+    assert human.character.item_slots["body"] is None

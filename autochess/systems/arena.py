@@ -25,6 +25,7 @@ class ArenaUnit:
     agility: float
     crit_chance: float
     lifesteal: float
+    invulnerable: bool = False
     alive: bool = True
     attack_cooldown: float = 0.0
     flash_timer: float = 0.0
@@ -77,6 +78,7 @@ class ArenaSimulation:
                 agility=character.aux_stats.agility,
                 crit_chance=character.aux_stats.crit_chance,
                 lifesteal=character.aux_stats.lifesteal,
+                invulnerable=player.infinite_health,
             )
         return units
 
@@ -138,8 +140,13 @@ class ArenaSimulation:
             else:
                 events.append(f"{unit.name} hits {target.name} for {damage}")
 
-            target.hp = max(0, target.hp - damage)
             target.flash_timer = 0.12
+            if target.invulnerable:
+                events.append(f"{target.name} ignores the damage")
+                unit.attack_cooldown = max(0.15, 1.0 / unit.attack_speed)
+                continue
+
+            target.hp = max(0, target.hp - damage)
             if unit.lifesteal > 0:
                 heal = int(damage * unit.lifesteal)
                 unit.hp = min(unit.max_hp, unit.hp + heal)

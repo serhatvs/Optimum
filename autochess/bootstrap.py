@@ -40,6 +40,7 @@ def build_match(seed: int, data_dir: Path, player_name: str = "Player") -> Match
             name=player_name,
             is_human=True,
             character=human_character,
+            infinite_health=True,
         )
     )
 

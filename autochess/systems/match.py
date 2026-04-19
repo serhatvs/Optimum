@@ -10,6 +10,10 @@ from autochess.systems.combat import run_duel
 ROUND_LOSS_DAMAGE = 12
 
 
+def player_has_infinite_health(player: Player) -> bool:
+    return player.infinite_health
+
+
 def run_match_round(match: MatchState) -> list[str]:
     rng = random.Random(match.seed + match.round_number)
     players = match.active_players()
@@ -39,10 +43,15 @@ def run_match_round(match: MatchState) -> list[str]:
         else:
             winner, loser = right, left
 
-        loser.hp = max(0, loser.hp - ROUND_LOSS_DAMAGE)
-        events.append(
-            f"{winner.name} beat {loser.name} in {result.ticks} ticks; {loser.name} hp={loser.hp}"
-        )
+        if player_has_infinite_health(loser):
+            events.append(
+                f"{winner.name} beat {loser.name} in {result.ticks} ticks; {loser.name} ignores the round damage"
+            )
+        else:
+            loser.hp = max(0, loser.hp - ROUND_LOSS_DAMAGE)
+            events.append(
+                f"{winner.name} beat {loser.name} in {result.ticks} ticks; {loser.name} hp={loser.hp}"
+            )
         if loser.hp == 0:
             loser.eliminated = True
             events.append(f"{loser.name} was eliminated")
@@ -59,10 +68,29 @@ def get_winner(match: MatchState) -> Player | None:
     return None
 
 
+def get_human_player(match: MatchState) -> Player | None:
+    for player in match.players:
+        if player.is_human:
+            return player
+    return None
+
+
+def player_was_eliminated(match: MatchState) -> bool:
+    human_player = get_human_player(match)
+    return human_player is not None and human_player.eliminated
+
+
+def is_match_over(match: MatchState) -> bool:
+    return player_was_eliminated(match) or get_winner(match) is not None
+
+
 def apply_arena_result(match: MatchState, winner_player_id: str) -> list[str]:
     events = [f"Round {match.round_number} arena resolved"]
     for player in match.active_players():
         if player.player_id == winner_player_id:
+            continue
+        if player_has_infinite_health(player):
+            events.append(f"{player.name} ignores the round damage")
             continue
         player.hp = max(0, player.hp - ROUND_LOSS_DAMAGE)
         events.append(f"{player.name} loses {ROUND_LOSS_DAMAGE} hp -> {player.hp}")

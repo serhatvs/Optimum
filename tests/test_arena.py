@@ -205,7 +205,7 @@ def test_weighted_aggro_can_prefer_farther_high_bounty_target() -> None:
     alpha.y = 50.0
     bravo.x = 60.0
     bravo.y = 50.0
-    charlie.x = 130.0
+    charlie.x = 80.0
     charlie.y = 50.0
 
     target = arena._pick_target(alpha)
@@ -264,7 +264,7 @@ def test_sticky_aggro_switches_for_much_better_target() -> None:
     alpha.y = 50.0
     bravo.x = 85.0
     bravo.y = 50.0
-    charlie.x = 110.0
+    charlie.x = 67.0
     charlie.y = 50.0
     alpha.target_id = bravo.player_id
 

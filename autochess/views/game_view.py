@@ -83,13 +83,29 @@ class GameView(arcade.View):
                     pixelated=True,
                 )
             else:
-                arcade.draw_rectangle_filled(46, y - 2, 32, 32, arcade.color.SLATE_GRAY)
+                arcade.draw_rect_filled(
+                    arcade.XYWH(46, y - 2, 32, 32), arcade.color.SLATE_GRAY
+                )
 
-            label = f"{player.name:12} | {player.character.archetype:8} | {status}"
+            # Player Info Row
+            label = f"[ {player.name} ] HP: {player.character.current_hp} | ATK: {player.character.core_stats.atk} | DEF: {player.character.core_stats.def_stat}"
             arcade.Text(label, 70, y + 8, arcade.color.LIGHT_GRAY, 14).draw()
 
-            health_ratio = player.hp / 100.0
-            self._draw_health_bar(70, y - 2, 240, health_ratio)
+            # Items Row
+            item_labels = []
+            for slot, item in player.character.item_slots.items():
+                if item:
+                    # Simplify effect for display: just first modifier stat/value
+                    mod = item.modifiers[0]
+                    mod_str = (
+                        f"{mod.stat} {'+' if mod.value > 0 else ''}{mod.value:.2f}"
+                    )
+                    item_labels.append(f"[{item.name} - {mod_str}]")
+                else:
+                    item_labels.append("[ Empty ]")
+
+            items_text = "ITEMS: " + " ".join(item_labels)
+            arcade.Text(items_text, 70, y - 10, arcade.color.LIGHT_GRAY, 10).draw()
             y -= 50
 
         self._draw_arena()
